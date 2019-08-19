@@ -34,8 +34,9 @@ goto end
 
 :github
 %SPHINXBUILD% -M html %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
-robocopy _build/html docs /s /e /NFL /NDL /NJH /nc /ns /np
-REM robocopy _build/html docs /s /e /NFL /NDL /NJH /NJS /nc /ns /np
+del /f /s /q docs\* 1>nul
+for /D %%p IN ("docs\*") do rmdir "%%p" /s /q
+robocopy _build/html docs /s /e /NFL /NDL /NJH /NJS /nc /ns /np
 goto end
 
 :help

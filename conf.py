@@ -17,7 +17,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'Connect Documentation'
+project = 'Connect'
 copyright = '2019, Kurt Semba'
 author = 'Kurt Semba'
 
