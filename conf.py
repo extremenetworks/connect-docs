@@ -24,6 +24,8 @@ author = 'Kurt Semba'
 # The full version, including alpha/beta/rc tags
 release = '3.6'
 
+# Use index.rst as entry point
+master_doc = 'index'
 
 # -- General configuration ---------------------------------------------------
 
