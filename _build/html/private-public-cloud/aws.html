@@ -1,0 +1,1177 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Amazon Web Services &#8212; Connect 3.6 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Private &amp; Public Cloud" href="index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="amazon-web-services">
+<h1><a class="toc-backref" href="#id1">Amazon Web Services</a><a class="headerlink" href="#amazon-web-services" title="Permalink to this headline">¶</a></h1>
+<p><strong>Abstract:</strong> This document details the requirements, methodologies, and
+tools required to integrate Amazon Web Services with Extreme Networks
+Management Center.</p>
+<div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#amazon-web-services" id="id1">Amazon Web Services</a></p>
+<ul>
+<li><p><a class="reference internal" href="#introduction" id="id2">Introduction</a></p>
+<ul>
+<li><p><a class="reference internal" href="#goals" id="id3">Goals</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#prerequisites" id="id4">Prerequisites</a></p></li>
+<li><p><a class="reference internal" href="#integration-overview" id="id5">Integration Overview</a></p>
+<ul>
+<li><p><a class="reference internal" href="#multi-account-support" id="id6">Multi-Account Support</a></p></li>
+<li><p><a class="reference internal" href="#managed-domains-es-groups-security-groups" id="id7">Managed Domains, ES Groups &amp; Security Groups</a></p></li>
+<li><p><a class="reference internal" href="#mapping-domains-to-vpc-networks" id="id8">Mapping Domains to VPC Networks</a></p></li>
+<li><p><a class="reference internal" href="#vms-with-multiple-interfaces" id="id9">VMs with multiple Interfaces</a></p></li>
+<li><p><a class="reference internal" href="#naming-convention" id="id10">Naming Convention</a></p></li>
+<li><p><a class="reference internal" href="#sites" id="id11">Sites</a></p></li>
+<li><p><a class="reference internal" href="#topology-xmc-devices-switches" id="id12">Topology - XMC Devices (Switches)</a></p></li>
+<li><p><a class="reference internal" href="#xmc-end-systems" id="id13">XMC End-Systems</a></p></li>
+<li><p><a class="reference internal" href="#xmc-end-system-groups" id="id14">XMC End-System Groups</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#installation-and-configuration" id="id15">Installation and Configuration</a></p>
+<ul>
+<li><p><a class="reference internal" href="#aws-api-access" id="id16">AWS API Access</a></p></li>
+<li><p><a class="reference internal" href="#aws-default-region" id="id17">AWS Default Region</a></p></li>
+<li><p><a class="reference internal" href="#configure-connect" id="id18">Configure Connect</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#alarm-and-event-messages" id="id19">Alarm and Event Messages</a></p>
+<ul>
+<li><p><a class="reference internal" href="#policy-verification" id="id20">Policy Verification</a></p></li>
+<li><p><a class="reference internal" href="#policy-enforcement" id="id21">Policy Enforcement</a></p></li>
+<li><p><a class="reference internal" href="#security-group-assignment" id="id22">Security Group Assignment</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#viewing-data" id="id23">Viewing Data</a></p>
+<ul>
+<li><p><a class="reference internal" href="#viewing-device-data" id="id24">Viewing Device Data</a></p></li>
+<li><p><a class="reference internal" href="#viewing-end-system-data" id="id25">Viewing End-System Data</a></p></li>
+<li><p><a class="reference internal" href="#cloud-reports" id="id26">Cloud Reports</a></p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="introduction">
+<h2><a class="toc-backref" href="#id2">Introduction</a><a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>This integration provides automation and enhanced security regarding AWS
+EC2 instances and security groups. Main use cases:</p>
+<ul class="simple">
+<li><p>Manage AWS security groups through EMC (policies)</p></li>
+<li><p>Automatically assign AWS EC2 instances to managed security groups</p></li>
+<li><p>Import AWS instances to XMC</p></li>
+<li><p>Import virtual subnets as switches in XMC (topology)</p></li>
+<li><p>Provide reports on data retrieved from the Amazon cloud</p></li>
+</ul>
+<div class="section" id="goals">
+<h3><a class="toc-backref" href="#id3">Goals</a><a class="headerlink" href="#goals" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li><p>Import VM <strong>instances</strong> from AWS as <strong>end-systems</strong> into XMC</p></li>
+<li><p>Import</p>
+<ol class="loweralpha simple">
+<li><p>AWS <strong>subnets</strong> to create XMC <strong>switches</strong> and</p></li>
+<li><p>AWS <strong>instance interfaces</strong> to create XMC <strong>switch ports</strong></p></li>
+</ol>
+</li>
+<li><p>Use this data on the created XMC switches to</p>
+<ol class="loweralpha simple" start="3">
+<li><p>update the <strong>created switches’ nick name, location, contact</strong> and
+<strong>user data fields</strong></p></li>
+<li><p>assign the switches to XMC <strong>sites</strong></p></li>
+<li><p>update the created switch ports’ <strong>name</strong> and <strong>description</strong>
+fields</p></li>
+</ol>
+</li>
+<li><p>Use this data on the created XMC end-systems to</p>
+<ol class="loweralpha simple" start="6">
+<li><p>update the <strong>custom</strong> fields, <strong>state</strong>, <strong>authorization</strong>,
+<strong>device family</strong>, <strong>hostname</strong>, <strong>IP address</strong></p></li>
+<li><p>map them to their connected <strong>switch</strong> (=AWS subnet) and <strong>port</strong>
+(=instance interface on that subnet) which also maps them to sites</p></li>
+</ol>
+</li>
+<li><p><strong>Manage</strong> <strong>security groups based on XMC policies</strong></p>
+<ol class="loweralpha simple" start="8">
+<li><p>Import security groups from so called <strong>managed VPCs</strong> (defined in Connect’s config)</p></li>
+<li><p>Compare to corresponding policies from so called <strong>managed Policy
+domains</strong></p></li>
+<li><p><strong>Create / update security groups based on policies / services /
+rules</strong></p></li>
+</ol>
+</li>
+<li><p>Manage <strong>EC2 instance assignment to security groups</strong></p>
+<ol class="loweralpha simple" start="11">
+<li><p>Based on <strong>manual XMC end-system group assignments</strong></p></li>
+</ol>
+</li>
+<li><p>Provide custom <strong>reports</strong> on networks, subnetworks, availability
+zones and instances</p></li>
+</ol>
+</div>
+</div>
+<div class="section" id="prerequisites">
+<h2><a class="toc-backref" href="#id4">Prerequisites</a><a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
+<p>Th following prerequisites are required:</p>
+<ul>
+<li><p>Extreme Management Center</p>
+<ul>
+<li><p>The minimum version required is XMC v8.2 (some features, like
+assigning devices and end-systems to sites require XMC v8.3)</p></li>
+<li><p>The NMS-ADV (advanced) license must be deployed to enable this and
+other Connect integrations</p></li>
+<li><div class="line-block">
+<div class="line">Internet access</div>
+<div class="line">(Connect is running on the XMC server and needs access to the
+AWS cloud)</div>
+</div>
+</li>
+</ul>
+</li>
+<li><p>Amazon Web Services Account</p></li>
+</ul>
+</div>
+<div class="section" id="integration-overview">
+<h2><a class="toc-backref" href="#id5">Integration Overview</a><a class="headerlink" href="#integration-overview" title="Permalink to this headline">¶</a></h2>
+<p><strong>The overall architecture is centered around the XMC policy domain.
+Customers can create a dedicated policy domain with policies, service
+and rules that they want to use to protect their virtual instances. The
+Connect module’s configuration must mention this policy domain as so
+called managed domain and must map it to one or more AWS accounts and
+VPC networks.</strong></p>
+<p><strong>Once this domain gets enforced, Connect will</strong></p>
+<ul class="simple">
+<li><p><strong>compare the policy rules with the existing security groups within
+the configured account’s network</strong></p></li>
+<li><p><strong>convert policy rules to security group rules and create / update
+security groups as needed</strong></p></li>
+<li><p><strong>Create / update XMC end-system groups for each managed domain &amp;
+policy</strong></p>
+<ul>
+<li><p><strong>Group names: policyDomain__policyName</strong></p></li>
+</ul>
+</li>
+<li><p><strong>Once an admin assigns an XMC end-system to one of the managed
+groups, Connect will assign the corresponding security groups to the
+corresponding AWS instance in the cloud to actually apply the
+corresponding security group rules.</strong></p></li>
+</ul>
+<p><a class="reference internal" href="../_images/image1.png"><img alt="image0" src="../_images/image1.png" style="width: 6.5in; height: 2.94028in;" /></a></p>
+<div class="section" id="multi-account-support">
+<h3><a class="toc-backref" href="#id6">Multi-Account Support</a><a class="headerlink" href="#multi-account-support" title="Permalink to this headline">¶</a></h3>
+<p>The integration supports synchronization with multiple AWS accounts.
+Connect will pull all instances from all configured AWS accounts into
+XMC. It will synchronize the configured list of managed Extreme policy
+domains to the configured list of AWS VPC networks (configurable per
+account).</p>
+<p>The visualization below shows a setup where two policy domains are
+created. One provides a set of standard policies that is synchronized to
+two AWS cloud accounts. Not all VPC networks in those two accounts
+receive those policies though. The other policy domain provides a set of
+special policies which is only synchronized into (a different) one AWS
+account.</p>
+<p><a class="reference internal" href="../_images/image2.png"><img alt="image1" src="../_images/image2.png" style="width: 6.5in; height: 3.31528in;" /></a></p>
+</div>
+<div class="section" id="managed-domains-es-groups-security-groups">
+<h3><a class="toc-backref" href="#id7">Managed Domains, ES Groups &amp; Security Groups</a><a class="headerlink" href="#managed-domains-es-groups-security-groups" title="Permalink to this headline">¶</a></h3>
+<p>**
+The minimum configuration for this solution requires the admin to define
+at least one so called managed policy domain and map it to at least one
+account and VPC network (within that account). A managed policy domain
+is just a standard policy domain within XMC – it becomes a managed one
+by adding it to this Connect module’s configuration.**</p>
+<p><strong>Connect is actually not managing (modifying) the policy domain. Only
+the XMC admin is modifying it. But such domains are used by Connect to</strong></p>
+<ul class="simple">
+<li><p><strong>Create XMC end-system groups for each policy</strong></p></li>
+<li><p><strong>Create AWS security groups for each policy within the list of
+configured VPC networks</strong></p></li>
+</ul>
+<p><strong>Those auto-created XMC end-system groups and AWS security groups are
+considered managed as they can be created, updated and deleted by
+Connect. They should not be modified manually.</strong></p>
+<p><strong>In regards to managed XMC end-system groups, Connect will only create
+one end-system group for each managed policy domain and contained
+policy. No matter how many accounts are being synchronized. The reason
+for that is that those end-system groups represent exactly one policy
+and even if that policy is exported to multiple accounts, it is still
+representing the same policy.</strong></p>
+<p><a class="reference internal" href="../_images/image3.png"><img alt="image2" src="../_images/image3.png" style="width: 4.6913in; height: 3.92897in;" /></a></p>
+</div>
+<div class="section" id="mapping-domains-to-vpc-networks">
+<h3><a class="toc-backref" href="#id8">Mapping Domains to VPC Networks</a><a class="headerlink" href="#mapping-domains-to-vpc-networks" title="Permalink to this headline">¶</a></h3>
+<p>**
+When configuring how to map a managed domain to a VPC network in AWS the
+following rules apply:**</p>
+<ul class="simple">
+<li><p><strong>One managed policy domain is mapped / exported to one or more VPC
+networks</strong></p></li>
+<li><p><strong>No VPC network can be assigned to more than one policy domain</strong></p></li>
+<li><p><strong>Policy domains that are not configured within Connect won’t be
+sync’ed to AWS</strong></p></li>
+<li><p><strong>VPCs that are not configured within Connect won’t be altered
+(“unmanaged” VPCs)</strong></p></li>
+<li><p><strong>Customers can manually create additional security groups in
+“managed” VPC networks</strong></p></li>
+<li><p><strong>Changes to “managed” security groups will be overwritten on next
+policy enforce</strong></p></li>
+</ul>
+<p><strong>The image below visualizes valid and invalid configurations:</strong></p>
+<ul class="simple">
+<li><p><strong>Valid:</strong></p>
+<ul>
+<li><p><strong>Map policy domain “Custom App1” to VPC network “Custom App1”</strong></p></li>
+<li><p><strong>Map policy domain “Standard Apps” to two VPC networks</strong></p>
+<ul>
+<li><p><strong>this will create the exact same security groups within both
+VPC networks</strong></p></li>
+<li><p><strong>very useful for rules that you want to apply to all / most of
+your VPC networks as they apply some basic set of common
+rules</strong></p></li>
+<li><p><strong>avoids config errors especially when the same rules have to
+be managed for many VPC networks</strong></p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>Not valid:</strong></p>
+<ul>
+<li><p><strong>The red arrow indicates a config error since the destination VPC
+network “FinTech” is already a managed network from the “Standard
+Apps” policy domain. A VPC network cannot be “fed” by more
+than one policy domain.</strong></p></li>
+</ul>
+</li>
+</ul>
+<p><a class="reference internal" href="../_images/image4.png"><img alt="image3" src="../_images/image4.png" style="width: 6.5in; height: 4.64514in;" /></a></p>
+</div>
+<div class="section" id="vms-with-multiple-interfaces">
+<h3><a class="toc-backref" href="#id9">VMs with multiple Interfaces</a><a class="headerlink" href="#vms-with-multiple-interfaces" title="Permalink to this headline">¶</a></h3>
+<p>**
+AWS allows you to create a VM with multiple NICs. This allows Connect to
+apply different security groups for each interface of such a VM.**</p>
+<p><strong>The image below shows two XMC end-systems which belong to a single AWS
+VM Connect creates an XMC end-system for each NIC on an AWS VM. Based on
+the different group assignment in XMC (one end-system is assigned to
+group Cloud__WebServer and the other to group Cloud__AppServer) the
+corresponding security groups are applied per instance interface in
+AWS.</strong></p>
+<p><a class="reference internal" href="../_images/image5.png"><img alt="image4" src="../_images/image5.png" style="width: 6.54644in; height: 3.15444in;" /></a></p>
+</div>
+<div class="section" id="naming-convention">
+<h3><a class="toc-backref" href="#id10">Naming Convention</a><a class="headerlink" href="#naming-convention" title="Permalink to this headline">¶</a></h3>
+<p>**
+When creating XMC end-system groups and AWS security groups, Connect is
+following these naming conventions.**</p>
+<div class="section" id="security-group-name-description">
+<h4>Security Group Name &amp; Description<a class="headerlink" href="#security-group-name-description" title="Permalink to this headline">¶</a></h4>
+<p><strong>The name of each managed security group uses this syntax:
+extremePolicyDomain__extremePolicy</strong></p>
+<p><strong>Example:
+Hospital__Doctor</strong></p>
+<p><strong>AWS is not using the name of a security group as its unique identifier
+so it is allowed to use the same names on different VPCs (Connect will
+never create the same security group name within the same VPC). The
+security group ID is its identifier and is auto-generated by AWS when a
+new group is created.</strong></p>
+<p><strong>Connect is also setting the description field of all managed groups.
+The description is not used by Connect and is more meant to be useful
+for admins to understand that those groups are managed by Connect and
+should not be edited manually. Example:
+Managed by Extreme Connect - Referenced Domain / Policy: Hospital /
+Test</strong></p>
+<p><strong>This visualization shows an example of a security group name and how
+it is built based on the corresponding XMC policy.</strong></p>
+<p><a class="reference internal" href="../_images/image6.png"><img alt="image5" src="../_images/image6.png" style="width: 6.5in; height: 3.00972in;" /></a></p>
+</div>
+<div class="section" id="security-group-tag">
+<h4>Security Group Tag<a class="headerlink" href="#security-group-tag" title="Permalink to this headline">¶</a></h4>
+<p><strong>Connect will add two tags to each managed security group it creates:</strong></p>
+<ul class="simple">
+<li><p><strong>Name: this is just to indicate the name of the group and has no
+further use</strong></p></li>
+<li><p><strong>ExtremePolicyId: this tag is a key identifier used by Connect. Each
+AWS security group that contains this tag is considered a managed
+group by Connect. Ensure not to delete or modify this tag manually.
+It encodes the policy domain and the policy name that it is based on
+(= that is refers to)</strong></p></li>
+</ul>
+<p><strong>Example ExtremePolicyId tag:
+Hospital__Doctor</strong></p>
+<p><strong>This tag is eventually used by Connect to identify the correct
+security group to be applied to an instance.</strong></p>
+<p><strong>This visualization shows an example of the security group tags and how
+they are built based on the corresponding XMC policy.</strong></p>
+<p><a class="reference internal" href="../_images/image7.png"><img alt="image6" src="../_images/image7.png" style="width: 6.5in; height: 2.94514in;" /></a></p>
+</div>
+<div class="section" id="extreme-end-system-groups">
+<h4>Extreme End-System Groups<a class="headerlink" href="#extreme-end-system-groups" title="Permalink to this headline">¶</a></h4>
+<p><strong>Each managed Extreme end-system group’s name will use this syntax:
+extremePolicyDomain—-extremePolicy</strong></p>
+<p><strong>Example:
+Hospital__Patient</strong></p>
+<p><strong>These end-system groups represent a specific policy you want to apply
+to a cloud-based instance (which is represented by an end-system in
+XMC). The description field lists the accounts and VPC networks that
+this end-system group is used for. Example:</strong></p>
+<p><strong>Managed by Connect for AWS accounts and VPCs: VPCs for account id
+snappy-bucksaw-168120: [datalab-network], VPCs for account id
+analytics-research-199618: [kurt-vpc-1, kurt-vpc-2]</strong></p>
+<p><strong>This example also shows that it is a valid configuration to
+synchronize one policy domain into multiple AWS accounts and even
+multiple VPC networks within a single account.</strong></p>
+<p><a class="reference internal" href="../_images/image8.png"><img alt="image7" src="../_images/image8.png" style="width: 6.5in; height: 2.81458in;" /></a></p>
+</div>
+</div>
+<div class="section" id="sites">
+<h3><a class="toc-backref" href="#id11">Sites</a><a class="headerlink" href="#sites" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="manage-xmc-sites">
+<h4>Manage XMC Sites<a class="headerlink" href="#manage-xmc-sites" title="Permalink to this headline">¶</a></h4>
+<p><strong>Once enabled, this integration will automatically create the site
+location</strong></p>
+<p><strong>/World/Cloud</strong></p>
+<p><strong>This site node will contain all devices that are retrieved from any
+cloud provider (AWS, Azure and GCP). Beneath the main node, the node
+that will hold all AWS related devices is created automatically</strong></p>
+<p><strong>/World/Cloud/AWS</strong></p>
+<p><strong>This is how it looks like in the UI if all three Cloud integration
+have been enabled:</strong></p>
+<p><a class="reference internal" href="../_images/image9.png"><img alt="image8" src="../_images/image9.png" style="width: 3.70833in; height: 2.52083in;" /></a></p>
+</div>
+<div class="section" id="assign-devices">
+<h4>Assign Devices<a class="headerlink" href="#assign-devices" title="Permalink to this headline">¶</a></h4>
+<p><strong>When the user clicks on the /World/Cloud/AWS list item the list of all
+retrieved AWS regions will be displayed as sub-sites and the list of all
+devices will automatically be filtered for those coming from AWS. Each
+device will show the site it belongs to:</strong></p>
+<p><a class="reference internal" href="../_images/image10.png"><img alt="image9" src="../_images/image10.png" style="width: 5.80435in; height: 4.5393in;" /></a></p>
+</div>
+<div class="section" id="assign-end-systems">
+<h4>Assign End-Systems<a class="headerlink" href="#assign-end-systems" title="Permalink to this headline">¶</a></h4>
+<p><strong>Since the end-systems are assigned to a switch and that switch belongs
+to a site, end-systems automatically are assigned to the corresponding
+sites as well ( the AWS region they run in).</strong></p>
+<p><a class="reference internal" href="../_images/image11.png"><img alt="image10" src="../_images/image11.png" style="width: 6.5in; height: 1.46875in;" /></a></p>
+</div>
+</div>
+<div class="section" id="topology-xmc-devices-switches">
+<h3><a class="toc-backref" href="#id12">Topology - XMC Devices (Switches)</a><a class="headerlink" href="#topology-xmc-devices-switches" title="Permalink to this headline">¶</a></h3>
+<p>Connect will create one device (switch) in XMC for each subnet found in
+AWS (from all configured accounts). Connect will then create one switch
+port for each instance interfaces that is connected to an AWS subnet.
+Those switches and ports will then be used to virtually “connect” the
+end-systems (instances) and thus provide a sense of “location” for each
+AWS instance.</p>
+<div class="section" id="creating-devices">
+<h4>Creating Devices<a class="headerlink" href="#creating-devices" title="Permalink to this headline">¶</a></h4>
+<p>The screenshot below shows a section of XMC devices that have been
+created based on AWS subnets and some of the corresponding AWS subnets.</p>
+<p><a class="reference internal" href="../_images/image12.png"><img alt="image11" src="../_images/image12.png" style="width: 6.22024in; height: 2.74026in;" /></a></p>
+<p>Before trying to create switches, Connect pulls the current list of
+switches from XMC and tries to parse data from their <strong>nick name,
+location, contact and user data</strong> fields. Data encoded here:</p>
+<ul>
+<li><p>Nick name:</p>
+<ul class="simple">
+<li><p>if the subnet has a “Name” tag defined in AWS, that is what will
+be used.</p></li>
+<li><p>If not, the AWS subnet id is used</p></li>
+</ul>
+</li>
+<li><p>Site: the XMC site location of the device region of the subnet</p></li>
+<li><p>Location: Zone name of the subnet</p></li>
+<li><p>Contact: Account name id (that this subnet is pulled from)</p></li>
+<li><div class="line-block">
+<div class="line">User Data 1: always shows cp=aws</div>
+<div class="line">( reference that this device originates from AWS)</div>
+</div>
+</li>
+<li><p>User Data 2: AWS VPC id</p></li>
+<li><p>User Data 3: AWS subnet id</p></li>
+</ul>
+<p><strong>These fields should never be modified manually!</strong></p>
+<p>After creating the switch, Connect will create a switch port for each
+instance interface that is connect to this subnet.</p>
+<p><a class="reference internal" href="../_images/image13.png"><img alt="image12" src="../_images/image13.png" style="width: 6.32373in; height: 2.28483in;" /></a></p>
+<p>Connect will encode data within the following switch port fields:</p>
+<ul class="simple">
+<li><p>Name:</p>
+<ul>
+<li><p>MAC address of the instance interface</p></li>
+</ul>
+</li>
+<li><p>Description:</p>
+<ul>
+<li><p>Instance name</p></li>
+<li><p>instance id</p></li>
+</ul>
+</li>
+</ul>
+<p><strong>These fields should never be modified manually!</strong></p>
+</div>
+<div class="section" id="autogenerate-switch-ip">
+<h4>Autogenerate Switch IP<a class="headerlink" href="#autogenerate-switch-ip" title="Permalink to this headline">¶</a></h4>
+<p>The IP addresses are automatically generated based off of the CIDR range
+provided by AWS for each subnet. Since AWS allows you to have the same
+subnet (with the same CIDR range) in multiple regions, the switch IP is
+auto-incremented starting at the first IP within the given CIDR range.</p>
+<p>The auto-generated switch IP addresses are not relevant (they are not
+accessible and cannot be used by XMC to talk to any AWS switch) but need
+to be provided to XMC.</p>
+</div>
+<div class="section" id="removing-resyncing-xmc-devices">
+<h4>Removing / Resyncing XMC Devices<a class="headerlink" href="#removing-resyncing-xmc-devices" title="Permalink to this headline">¶</a></h4>
+<p>If a subnet in AWS gets deleted, the corresponding XMC switch will be
+deleted as well.</p>
+<p>If an XMC device that corresponds to a (still existing) AWS subnet get
+deleted (for example: by accident through the admin) Connect will
+re-create this switch.</p>
+</div>
+<div class="section" id="updating-xmc-switch-ports">
+<h4>Updating XMC Switch Ports<a class="headerlink" href="#updating-xmc-switch-ports" title="Permalink to this headline">¶</a></h4>
+<p>If a new instance interface is connected to a subnet in AWS, the
+corresponding XMC switch will get a new switch port. And if an existing
+instance interface is removed from a subnet in AWS, the corresponding
+switch port in XMC is removed.</p>
+</div>
+</div>
+<div class="section" id="xmc-end-systems">
+<h3><a class="toc-backref" href="#id13">XMC End-Systems</a><a class="headerlink" href="#xmc-end-systems" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="creating-end-systems">
+<h4>Creating End-Systems<a class="headerlink" href="#creating-end-systems" title="Permalink to this headline">¶</a></h4>
+<p>This integration will create an end-system entry in XMC for each AWS
+instance’s network interface.</p>
+<p>The following table shows the attributes mapping from AWS instances to
+XMC end-systems</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 46%" />
+<col style="width: 54%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>AWS Instance</p></th>
+<th class="head"><p>XMC end-system</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Taken from the intance’s network interface’s “association” attribute:</p></td>
+<td><p>Hostname and IP address</p></td>
+</tr>
+<tr class="row-odd"><td><ul>
+<li><div class="line-block">
+<div class="line">If Public DNS is provided:</div>
+</div>
+</li>
+</ul>
+</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><div class="line-block">
+<div class="line">Use Public DNS name and Public IP</div>
+</div>
+</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><ul>
+<li><div class="line-block">
+<div class="line">Else:</div>
+</div>
+</li>
+</ul>
+</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><div class="line-block">
+<div class="line">Use Private DNS name and Private IP</div>
+</div>
+</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>Instance type</p></td>
+<td><p>Device family</p></td>
+</tr>
+<tr class="row-even"><td><p>State</p></td>
+<td><p>State:</p>
+<ul class="simple">
+<li><p>RUNNING ACCEPT</p></li>
+<li><p>Everything else DISCONNECTED</p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p>Subnet</p></td>
+<td><p>Switch IP
+XMC device IP is auto-generated based on the CIDR of the corresponding AWS subnet</p></td>
+</tr>
+<tr class="row-even"><td><p>Instance interface</p></td>
+<td><p>Connected Switch Port – also shows: zone and instance interface MAC address</p></td>
+</tr>
+</tbody>
+</table>
+<p>All end-systems will be shown in XMC as discovered through
+“Auto-Tracking”. By assigning end-systems to the corresponding switches,
+they will also be assigned to the corresponding site.</p>
+</div>
+<div class="section" id="updating-end-systems">
+<h4>Updating End-Systems<a class="headerlink" href="#updating-end-systems" title="Permalink to this headline">¶</a></h4>
+<p>The Connect module holds a cache of already synchronized end-systems in
+order to avoid having to recreate all end-systems during each poll
+interval. So if an AWS instance is already on that cache, tests will be
+executed on the following end-system properties before an update message
+is sent to the XMC API:</p>
+<ul class="simple">
+<li><p>IP address (network interface IP – preferred: public IP)</p></li>
+<li><p>Hostname (network interface DNS name – preferred: public DNS name)</p></li>
+<li><p>Switch IP (if the feature to sync AWS subnets to XMC devices is
+enabled)</p></li>
+<li><p>State</p></li>
+<li><p>Authorization</p></li>
+</ul>
+<p>In case any one of these tests show that an update is required, Connect
+will update the corresponding end-system in XMC.</p>
+</div>
+<div class="section" id="updating-custom-field">
+<h4>Updating Custom Field<a class="headerlink" href="#updating-custom-field" title="Permalink to this headline">¶</a></h4>
+<p>The Connect module is updating two custom fields for each
+end-system/instance imported from AWS:</p>
+<ol class="arabic">
+<li><p>One custom field contains general data about the corresponding
+instance. The content and syntax of this custom field can be modified
+through a configuration option <strong>but modifying it will most likely
+make the reports unavailable</strong>. The following data / variables are
+available:</p>
+<ol class="loweralpha">
+<li><div class="line-block">
+<div class="line">Available variables from an instance (which the interface
+belongs to):</div>
+<div class="line"><em>instanceId, instanceState, instanceType, instanceName, tags</em></div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">Available variables from the instance interface:</div>
+<div class="line"><em>mac, interfaceId, interfaceStatus, vpcId, subnetId, subnetName,
+publicIpAddress, privateIpAddress, ipAddress, publicDnsName,
+privateDnsName, description, securityGroups</em></div>
+</div>
+</li>
+</ol>
+</li>
+</ol>
+<blockquote>
+<div><div class="line-block">
+<div class="line">The default config for this parameter is:</div>
+<div class="line"><em>iName=#instanceName#;iStatus=#instanceState#;nwIfNetwork=#vpcId#;nwIfSubnet=#subnetName#;iZone=#availabilityZone#;nwIfIp=#ipAddress#;iType=#instanceType#</em></div>
+</div>
+</div></blockquote>
+<ol class="arabic" start="2">
+<li><div class="line-block">
+<div class="line">Another custom field contains data that is used to identify the AWS
+instance, its interface and the account name belongs to. <strong>Do not
+manually modify the content of this custom field!</strong> Example
+content:</div>
+<div class="line"><em>cp=aws;iId=i-0b4845152d087a585;nwIfId=eni-216dc071;accName=MainAccount;vpc=vpc-f2ad7195</em></div>
+</div>
+</li>
+</ol>
+<p>That data can be used to search and filter for end-systems.</p>
+</div>
+<div class="section" id="removing-end-systems">
+<h4>Removing End-Systems<a class="headerlink" href="#removing-end-systems" title="Permalink to this headline">¶</a></h4>
+<p>This section describes the mechanisms available to handle end-systems
+that have been removed/deleted/aged from AWS and thus don’t appear in
+the result list retrieved via the AWS API.</p>
+<p>The following actions can be taken (all configurable):</p>
+<ul class="simple">
+<li><p>Move deleted end-system to “deletion” group: admins can configured a
+so called “deletion” group on the Connect module. Once an already
+synchronized instance has been deleted from AWS, its corresponding
+MAC address will be deleted from any end-system group in EAC and
+added to this end-system group. Administrators could use this group
+to track which end-systems are now “outdated” according to AWS.</p></li>
+<li><p>Delete end-systems from XMC: delete the end-system using its MAC.
+This won’t remove any group memberships but will delete the
+end-system from XMC / NAC</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="xmc-end-system-groups">
+<h3><a class="toc-backref" href="#id14">XMC End-System Groups</a><a class="headerlink" href="#xmc-end-system-groups" title="Permalink to this headline">¶</a></h3>
+<p>Connect uses XMC end-system groups (MAC-based) for two purposes:</p>
+<ol class="arabic simple">
+<li><p>A catch-all group can be configured to put all instance MACs into a
+single end-system group for awareness – admins can use this group for
+easy search, grouping and filtering</p></li>
+<li><p>For each managed policy (from all managed domains), Connect creates
+an end-system group. When an end-system MAC gets added to such an
+end-system group the corresponding AWS instance will get assigned to
+the corresponding security group. That way, pushing XMC end-systems
+to groups will enforce security groups in AWS.</p></li>
+</ol>
+<p><a class="reference internal" href="../_images/image14.png"><img alt="image13" src="../_images/image14.png" style="width: 6.5in; height: 3.50347in;" /></a></p>
+<p>If those end-systems get added to MAC groups that are not managed by
+Connect, no change to the corresponding instances’ security group
+assignment will be performed.</p>
+<p>If you configure a valid (existing) MAC-based end-system group for this
+feature (“<em>Default endsystem group for all instances</em>”) be aware that,</p>
+<ul class="simple">
+<li><p>if you manually delete entries from this group <strong>and</strong></p></li>
+<li><p>you have the feature “<em>Assign AWS security groups based on xmc
+end-system groups</em>” enabled <strong>and</strong></p></li>
+<li><p>you have the feature “<em>Overwrite manual security groupassignment</em>”
+enabled</p></li>
+</ul>
+<p>Connect will <strong>remove any previously, manually configured security group
+assignment</strong> from the corresponding AWS instance which might lead to
+<strong>communication issues</strong> with that instance. Connect will only keep
+automatically assigned security groups on that instance and if the
+corresponding end-system has only been in that default catch-all group
+and now is not member of any group, Connect will remove all security
+group assignments from that instance (apart from the default security
+group from its VPC) which might impact its connectivity.</p>
+</div>
+</div>
+<div class="section" id="installation-and-configuration">
+<h2><a class="toc-backref" href="#id15">Installation and Configuration</a><a class="headerlink" href="#installation-and-configuration" title="Permalink to this headline">¶</a></h2>
+<p>First confirm that Extreme Management Center (XMC) is installed.</p>
+<div class="section" id="aws-api-access">
+<h3><a class="toc-backref" href="#id16">AWS API Access</a><a class="headerlink" href="#aws-api-access" title="Permalink to this headline">¶</a></h3>
+<p>To retrieve any data from this API, the following parameters are
+required:</p>
+<ul class="simple">
+<li><p>Access key id</p></li>
+<li><p>Access key secret</p></li>
+<li><p>Default region</p></li>
+</ul>
+<p>You can generate the access key and secret access key by following these
+directions:</p>
+<p><a class="reference external" href="http://docs.aws.amazon.com/IAM/latest/UserGuide/ManagingCredentials.html#Using_CreateAccessKey">http://docs.aws.amazon.com/IAM/latest/UserGuide/ManagingCredentials.html#Using_CreateAccessKey</a></p>
+<p>Ensure that the user you base this API access key off of has sufficient
+permissions to use the API, manage security groups, managed security
+groups assigned to instances and pull data on security groups,
+instances, zones, subnets and managed security groups.</p>
+<p>Here is a short abstract from the AWS documentation on how to create an
+access key and secret:</p>
+<p><strong>To create, modify, or delete a user’s access keys (console)</strong></p>
+<ol class="arabic simple">
+<li><p>Sign in to the AWS Management Console and open the IAM console
+at <a class="reference external" href="https://console.aws.amazon.com/iam/">https://console.aws.amazon.com/iam/</a>.</p></li>
+<li><p>In the navigation pane, choose <strong>Users</strong>.</p></li>
+<li><p>Choose the name of the preferred user, and then choose
+the <strong>Security credentials</strong> tab.</p></li>
+<li><p>If needed, expand the <strong>Access keys</strong> section and do any of the
+following:</p>
+<ul class="simple">
+<li><p>To create an access key, choose <strong>Create access key</strong>. Then
+choose <strong>Download .csv file</strong> to save the access key ID and
+secret access key to a CSV file on your computer. Store the file
+in a secure location. You will not have access to the secret
+access key again after this dialog box closes. After you have
+downloaded the CSV file, choose <strong>Close</strong>.</p></li>
+<li><p>To disable an active access key, choose <strong>Make inactive</strong>.</p></li>
+<li><p>To reenable an inactive access key, choose <strong>Make active</strong>.</p></li>
+<li><p>To delete an access key, choose its <strong>X</strong> button at the far
+right of the row. Then choose <strong>Delete</strong> to confirm.</p></li>
+</ul>
+</li>
+</ol>
+</div>
+<div class="section" id="aws-default-region">
+<h3><a class="toc-backref" href="#id17">AWS Default Region</a><a class="headerlink" href="#aws-default-region" title="Permalink to this headline">¶</a></h3>
+<p>The default region is required for some API calls (that are not region
+specific) and is set to “us-east-1” by default.</p>
+<p>All available regions:
+<a class="reference external" href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html">https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html</a></p>
+<p><a class="reference internal" href="../_images/image15.png"><img alt="cid:image001.png&#64;01D3D574.45E7D420" src="../_images/image15.png" style="width: 2.74153in; height: 4.64348in;" /></a></p>
+</div>
+<div class="section" id="configure-connect">
+<h3><a class="toc-backref" href="#id18">Configure Connect</a><a class="headerlink" href="#configure-connect" title="Permalink to this headline">¶</a></h3>
+<p>Configuration can be done both from the XMC tab “Connect” and the config
+file itself.</p>
+<p>Customers should not have to use the config file but it is mentioned
+just for documentation purposes. On an XMC v8.1 server it is located at
+<em>/usr/local/Extreme_Networks/NetSight/wildfly/standalone/configuration/connect</em>
+<em>/AwsHandler.xml</em></p>
+<p>Customers will use the XMC web UI for configuration.</p>
+<div class="section" id="aws-account-specifig-config">
+<h4>AWS Account Specifig Config<a class="headerlink" href="#aws-account-specifig-config" title="Permalink to this headline">¶</a></h4>
+<p>The first tab within the “Amazon Web Services” Connect module config
+section allows admins to configure AWS account specific information:</p>
+<ul>
+<li><div class="line-block">
+<div class="line">Account Name:</div>
+<div class="line">this is a freely configurable name for each AWS account you want to
+synchronize to. The name is simply for the customer to be able to
+know which instances belong to which account. It is not part of the
+AWS API authorization.</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">Access Key ID:</div>
+<div class="line">Used to authenticate and authorize Connect against the AWS API (see
+chapter above to create a key)</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">Access Key Secret:</div>
+<div class="line">Used to authenticate and authorize Connect against the AWS API (see
+chapter above to create a key secret)</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">Managed Domains and VPCs:</div>
+<div class="line">List of managed policy domains and their corresponding managed
+VPCs. Only policy domains configured here will be used to export
+policies to AWS. One policy domain can be mapped to one or more
+VPCs. No VPC can be assigned to more than one policy domain. The
+managed domains and VPCs must be given in the following format:
+domainName:vpcId1,vpcId2;domainName2:vpcId5,vpcId7. Example:
+Hospital:vpc-d8c5ada1</div>
+</div>
+</li>
+<li><p>Default Region:</p></li>
+</ul>
+<p>Used when creating new security groups. The AWS API requires to set a
+default region on this operation. Default value: us-east-1</p>
+<p>All available regions: us-gov-west-1, us-east-1, us-east-2, us-west-1,
+us-west-2, eu-west-1, eu-west-2, eu-west-3, eu-central-1, ap-south-1,
+ap-southeast-1, ap-southeast-2, ap-northeast-1, ap-northeast-2,
+sa-east-1, cn-north-1, cn-northwest-1, ca-central-1</p>
+<ul class="simple">
+<li><p>Regions to ignore:</p></li>
+</ul>
+<p>Semicolon separated list of region names that should be ignored when
+retrieving any data from AWS. Tests have shown that some regions seem to
+have special authorization and usually (for most enterprise customers)
+produce errors when trying to query them (China, government). If empty,
+Connect will try to retrieve data from all regions.</p>
+<p>All available regions: us-gov-west-1, us-east-1, us-east-2, us-west-1,
+us-west-2, eu-west-1, eu-west-2, eu-west-3, eu-central-1, ap-south-1,
+ap-southeast-1, ap-southeast-2, ap-northeast-1, ap-northeast-2,
+sa-east-1, cn-north-1, cn-northwest-1, ca-central-1</p>
+<p>Example (and default value): us-gov-west-1;cn-north-1;cn-northwest-1</p>
+<p><a class="reference internal" href="../_images/image16.png"><img alt="image15" src="../_images/image16.png" style="width: 6.5in; height: 0.94306in;" /></a></p>
+</div>
+<div class="section" id="general-config">
+<h4>General Config<a class="headerlink" href="#general-config" title="Permalink to this headline">¶</a></h4>
+<p>The second tab within the Connect “Amazon Web Services” module
+configuration section is called “Configuration” and provides more
+options. Most of them are similar to all other modules and thus won’t be
+discussed in detail within this document. Some important options are:</p>
+<ul>
+<li><div class="line-block">
+<div class="line">Custom field to use for identification data:</div>
+<div class="line">The number of the custom data field for each end-system to store
+the identification data to. This data is used to identify the
+corresponding AWS instance, network interface and account name. It
+also encodes the type of cloud provider used to pull this data from
+(in this case: aws). Format example:
+cp=aws;iId=4253868206409840076;nwIfFp=u7wnZ-pBoYg=;accN=analytics-research-199618</div>
+</div>
+</li>
+</ul>
+<p>This value must not be the same as the configured value for “Custom
+field to use”!</p>
+<ul>
+<li><div class="line-block">
+<div class="line">HTTP client socket timeout in milliseconds:</div>
+<div class="line">HTTP socket timeout in milliseconds for all HTTP connections to the
+AWS API. Defines how much time is allowed for the socket towards
+the AWS API to be unresponsive. Default: 50000 (=50 seconds)</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">HTTP client connection timeout in milliseconds:</div>
+<div class="line">HTTP connection timeout in milliseconds for all HTTP connections to
+the AWS API. Defines how much time is allowed for Connect to open
+up a socket to the AWS API. Default: 10000 (=10 seconds)</div>
+</div>
+</li>
+<li><p>Sync Policies with AWS Security Groups:</p></li>
+</ul>
+<p>When set to true, Connect will synchronize (export) the policies from
+all ‘managed’ policy domains to AWS security groups. It will create one
+security group for each policy from each ‘managed’ XMC policy domain.</p>
+<ul class="simple">
+<li><p>Sync Policies with XMC end-system groups:</p></li>
+</ul>
+<p>When set to true, Connect will synchronize the policies from all
+‘managed’ policy domains to XMC end-system groups. It will create one
+end-system group for each policy from each ‘managed’ XMC policy domain.</p>
+<ul class="simple">
+<li><p>Assign AWS security groups based on XMC end-system groups:</p></li>
+</ul>
+<p>When set to true will assign EC2 instances interfaces to AWS security
+groups based on the end-system groups that the corresponding end-system
+is assigned to in XMC/EAC. The mapping between EC2 instance interface
+and XMC end-system is based on the MAC address</p>
+<ul>
+<li><div class="line-block">
+<div class="line">Overwrite XMC end-systems’ Device Family with instance machine
+type:</div>
+<div class="line">If enabled, uses the instance type from AWS to overwrite the device
+family field for imported end-systems in XMC.</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">Create switches in XMC for AWS Subnetworks:</div>
+<div class="line">If enabled, imports all subnets from AWS and tries to create one
+managed device (switch) per subnet in XMC.</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">Delete end-systems from XMC that have been deleted from AWS:</div>
+<div class="line">If enabled, deletes the corresponding end-system from XMC if a AWS
+instance has been deleted. This actually deletes the end-system
+entry from NAC’s end-system list - not only the MAC address from
+any group!</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">End-system group for deleted AWS instances:</div>
+<div class="line">If an instance or any of its network interfaces get deleted in AWS
+their corresponding end-systems will be pushed to this end-system
+group</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">Remove end-systems from other groups on decommission:</div>
+<div class="line">Enable this to remove a device from all other groups when it is
+moved to the decommission group</div>
+</div>
+</li>
+<li><p>Regularly auto-enforce policies to AWS:</p></li>
+</ul>
+<p>When enabled, Connect automatically verify whether the “managed” policy
+domains are correctly synchronized to the configured VPCs. This will
+ensure that your policy configuration is kept consistent with your
+security groups within AWS even is someone manually changes those
+“managed” security groups in AWS</p>
+<ul class="simple">
+<li><p>Regularly auto-enforce:</p></li>
+</ul>
+<p>When enabled, Connect automatically verify whether the “managed” policy
+domains are correctly synchronized to the configured VPCs. This will
+ensure that your policy configuration is kept consistent with your
+security groups within AWS even is someone manually changes those
+“managed” security groups in AWS</p>
+</div>
+</div>
+</div>
+<div class="section" id="alarm-and-event-messages">
+<h2><a class="toc-backref" href="#id19">Alarm and Event Messages</a><a class="headerlink" href="#alarm-and-event-messages" title="Permalink to this headline">¶</a></h2>
+<p>This chapter lists all customer visible event messages within XMC’s
+“Alarms &amp; Events” tabs. This Connect module doesn’t generate any alarms
+but only events. If you want to elevate some of those events to alarms
+and trigger additional actions, please use the <em>Alarm Configuration</em>
+feature within XMC.</p>
+<div class="section" id="policy-verification">
+<h3><a class="toc-backref" href="#id20">Policy Verification</a><a class="headerlink" href="#policy-verification" title="Permalink to this headline">¶</a></h3>
+<p>There are four types of events generated when Connect verifies policy
+domains with AWS security groups and XMC end-system groups.</p>
+<div class="section" id="started-policy-verification-with-aws">
+<h4>Started Policy Verification with AWS<a class="headerlink" href="#started-policy-verification-with-aws" title="Permalink to this headline">¶</a></h4>
+<p>This event is triggered when the verification process is kicked off.
+This can occur manually through a domain verify or domain enforce (the
+verification is done automatically prior to enforcing) or automatically
+on each module poll cycle (when feature Regularly auto-enforce policies
+to AWS is enabled).</p>
+<p><a class="reference internal" href="../_images/image17.png"><img alt="image16" src="../_images/image17.png" style="width: 6.5in; height: 1.06111in;" /></a></p>
+</div>
+<div class="section" id="started-policy-verification-with-xmc-end-system-groups">
+<h4>Started Policy Verification with XMC End-System Groups<a class="headerlink" href="#started-policy-verification-with-xmc-end-system-groups" title="Permalink to this headline">¶</a></h4>
+<p>This event is triggered when the verification process is kicked off.
+This can occur manually through a domain verify or domain enforce (the
+verification is done automatically prior to enforcing) or automatically
+on each module poll cycle (when feature Regularly auto-enforce policies
+to XMC End-System Groups is enabled).</p>
+<p>Example:</p>
+<p><a class="reference internal" href="../_images/image18.png"><img alt="image17" src="../_images/image18.png" style="width: 6.5in; height: 0.875in;" /></a></p>
+</div>
+<div class="section" id="finished-policy-verification-with-aws">
+<h4>Finished Policy Verification with AWS<a class="headerlink" href="#finished-policy-verification-with-aws" title="Permalink to this headline">¶</a></h4>
+<p>This event is triggered when the verification process is finished. It
+will show the results of the verification.</p>
+<p>Example 1: no change required:</p>
+<p><a class="reference internal" href="../_images/image19.png"><img alt="image18" src="../_images/image19.png" style="width: 6.5in; height: 0.71597in;" /></a></p>
+<p>Example 2: A new policy (containing two rules) has been created on XMC
+but has not yet been sync’ed to AWS. This policy is missing in the
+configured managed AWS VPC network:</p>
+<p><a class="reference internal" href="../_images/image20.png"><img alt="image19" src="../_images/image20.png" style="width: 6.5in; height: 1.05208in;" /></a></p>
+</div>
+<div class="section" id="finished-policy-verification-with-xmc-end-system-groups">
+<h4>Finished Policy Verification with XMC End-System Groups<a class="headerlink" href="#finished-policy-verification-with-xmc-end-system-groups" title="Permalink to this headline">¶</a></h4>
+<p>This event is triggered when the verification process is finished. It
+will show the results of the verification.</p>
+<p>Example 1: no change required:</p>
+<p><a class="reference internal" href="../_images/image21.png"><img alt="image20" src="../_images/image21.png" style="width: 5.09375in; height: 0.3125in;" /></a></p>
+<p>Example 2: A new policy has been created on XMC but has not yet been
+sync’ed to an XMC end-system group:</p>
+<p><a class="reference internal" href="../_images/image22.png"><img alt="image21" src="../_images/image22.png" style="width: 6.5in; height: 0.72569in;" /></a></p>
+</div>
+</div>
+<div class="section" id="policy-enforcement">
+<h3><a class="toc-backref" href="#id21">Policy Enforcement</a><a class="headerlink" href="#policy-enforcement" title="Permalink to this headline">¶</a></h3>
+<p>There are four types of events generated when Connect enforces policy
+domains with AWS security groups and XMC end-system groups.</p>
+<div class="section" id="started-policy-enforcement-with-aws">
+<h4>Started Policy Enforcement with AWS<a class="headerlink" href="#started-policy-enforcement-with-aws" title="Permalink to this headline">¶</a></h4>
+<p>This event is triggered when the enforcement process is kicked off. This
+can occur manually through a domain enforce or automatically on each
+module poll cycle (when feature Regularly auto-enforce policies to AWS
+is enabled).</p>
+<p>Example:</p>
+<p><a class="reference internal" href="../_images/image23.png"><img alt="image22" src="../_images/image23.png" style="width: 6.5in; height: 0.80069in;" /></a></p>
+</div>
+<div class="section" id="started-policy-enforcement-with-xmc-end-system-groups">
+<h4>Started Policy Enforcement with XMC End-System Groups<a class="headerlink" href="#started-policy-enforcement-with-xmc-end-system-groups" title="Permalink to this headline">¶</a></h4>
+<p>This event is triggered when the enforcement process is kicked off. This
+can occur manually through a domain enforce or automatically on each
+module poll cycle (when feature Regularly auto-enforce policies to XMC
+End-System Groups is enabled).</p>
+<p>Example:</p>
+<p><a class="reference internal" href="../_images/image24.png"><img alt="image23" src="../_images/image24.png" style="width: 6.5in; height: 0.76458in;" /></a></p>
+</div>
+<div class="section" id="finished-policy-enforcement-with-aws">
+<h4>Finished Policy Enforcement with AWS<a class="headerlink" href="#finished-policy-enforcement-with-aws" title="Permalink to this headline">¶</a></h4>
+<p>This event is triggered when the enforcement process is finished. It
+will show the results of the verification.</p>
+<p>Example 1: no change required:</p>
+<p><a class="reference internal" href="../_images/image25.png"><img alt="image24" src="../_images/image25.png" style="width: 6.5in; height: 0.63264in;" /></a></p>
+<p>Example 2: A new policy (containing two rules) has been created on XMC
+Connect created 1 new security group within AWS:</p>
+<p><a class="reference internal" href="../_images/image26.png"><img alt="image25" src="../_images/image26.png" style="width: 6.5in; height: 0.93542in;" /></a></p>
+</div>
+<div class="section" id="finished-policy-enforcement-with-xmc-end-system-groups">
+<h4>Finished Policy Enforcement with XMC End-System Groups<a class="headerlink" href="#finished-policy-enforcement-with-xmc-end-system-groups" title="Permalink to this headline">¶</a></h4>
+<p>This event is triggered when the enforcement process is finished. It
+will show the results of the verification.</p>
+<p>Example: A new policy has been created on XMC and has been enforced to
+an XMC end-system group. The name of that new end-system group is
+provided within the event text:</p>
+<p><a class="reference internal" href="../_images/image27.png"><img alt="image26" src="../_images/image27.png" style="width: 6.5in; height: 0.66528in;" /></a></p>
+</div>
+</div>
+<div class="section" id="security-group-assignment">
+<h3><a class="toc-backref" href="#id22">Security Group Assignment</a><a class="headerlink" href="#security-group-assignment" title="Permalink to this headline">¶</a></h3>
+<p>Whenever an XMC end-system that corresponds to an AWS instance is
+assigned to / removed from a managed XMC end-system group then the
+corresponding instance get its assigned security groups updated (to
+enforce the corresponding policy). To reflect that action, the following
+event is being logged:</p>
+<p><a class="reference internal" href="../_images/image28.png"><img alt="image27" src="../_images/image28.png" style="width: 6.5in; height: 0.84167in;" /></a></p>
+</div>
+</div>
+<div class="section" id="viewing-data">
+<h2><a class="toc-backref" href="#id23">Viewing Data</a><a class="headerlink" href="#viewing-data" title="Permalink to this headline">¶</a></h2>
+<p>This section provides information on where to find the data imported
+from AWS within XMC.</p>
+<div class="section" id="viewing-device-data">
+<h3><a class="toc-backref" href="#id24">Viewing Device Data</a><a class="headerlink" href="#viewing-device-data" title="Permalink to this headline">¶</a></h3>
+<p>The devices that are automatically created for each AWS subnet will
+contain the following data:</p>
+<p><a class="reference internal" href="../_images/image29.png"><img alt="image28" src="../_images/image29.png" style="width: 6.5in; height: 2.22569in;" /></a></p>
+<ul>
+<li><p>Name: if the subnet has a “Name” tag defined in AWS, that is what
+will be used. If not, the AWS subnet id is used</p></li>
+<li><p>Site: the XMC site location of the device region of the subnet</p></li>
+<li><p>IP address: auto-generated IP that is NOT the real IP of that subnet!</p></li>
+<li><p>Device Type: always shows AWS-Subnet</p></li>
+<li><p>Family: always shows Cloud Service Platform</p></li>
+<li><p>Location: zone that the subnet runs in</p></li>
+<li><p>Contact: user configured name of the AWS account which holds this
+subnet</p></li>
+<li><div class="line-block">
+<div class="line">User Data 1: always shows cp=aws</div>
+<div class="line">( reference that this device originates from AWS)</div>
+</div>
+</li>
+<li><p>User Data 2: AWS VPC id</p></li>
+<li><p>User Data 3: AWS subnet id</p></li>
+<li><p>Network OS: always shows Connect</p></li>
+</ul>
+<p>You can easily filter the list of devices per region by sorting the list
+of devices by “Sites” and then clicking on the region name you want to
+filter for:</p>
+<p><a class="reference internal" href="../_images/image30.png"><img alt="image29" src="../_images/image30.png" style="width: 6.5in; height: 1.98194in;" /></a></p>
+<div class="line-block">
+<div class="line">Another way to simply filter for all devices generated based on AWS
+subnets is by filtering the list of devices “by Device Type” and then
+going to</div>
+<div class="line">Cloud Service Platfrom AWS-Subnet</div>
+</div>
+<p><a class="reference internal" href="../_images/image31.png"><img alt="image30" src="../_images/image31.png" style="width: 6.5in; height: 2.06667in;" /></a></p>
+</div>
+<div class="section" id="viewing-end-system-data">
+<h3><a class="toc-backref" href="#id25">Viewing End-System Data</a><a class="headerlink" href="#viewing-end-system-data" title="Permalink to this headline">¶</a></h3>
+<p>Within the end-system table you should see data on all end-systems that
+are based on imported AWS instances (from the configured accounts)
+within the two configured custom fields. In this example screenshots the
+default custom1 is used for general instance data and custom2 for
+identifying AWS data.</p>
+<p><a class="reference internal" href="../_images/image32.png"><img alt="image31" src="../_images/image32.png" style="width: 6.27014in; height: 1.72917in;" /></a></p>
+<p><a class="reference internal" href="../_images/image33.png"><img alt="image32" src="../_images/image33.png" style="width: 6.38542in; height: 1.32292in;" /></a></p>
+<p>You will also be able to see the current status, IP address, site,
+hostname (public or private DNS name), device family (machine type),
+switch IP, switch nick name (AWS subnet) and port (zone &amp; MAC of
+instance interface) within the standard table columns. The
+“Authentication Type” will always be set to “Auto-Tracking” to indicate
+the source of this data.</p>
+<p><a class="reference internal" href="../_images/image34.png"><img alt="image33" src="../_images/image34.png" style="width: 6.27014in; height: 2.63335in;" /></a></p>
+</div>
+<div class="section" id="cloud-reports">
+<h3><a class="toc-backref" href="#id26">Cloud Reports</a><a class="headerlink" href="#cloud-reports" title="Permalink to this headline">¶</a></h3>
+<p>Introduced with XMC v8.2, the AWS cloud report is part of the new
+“Multi-Cloud” dashboard within XMC’s “Network” area.</p>
+<div class="section" id="aws-stats-report">
+<h4>AWS Stats Report<a class="headerlink" href="#aws-stats-report" title="Permalink to this headline">¶</a></h4>
+<p>The AWS specific Cloud Reports shows:</p>
+<ul class="simple">
+<li><p>Statistics</p></li>
+<li><p>Instance Distribution by AWS Account</p></li>
+<li><p>Distribution of VMs per machine type (top 10)</p></li>
+<li><p>Distribution of VMs per zone (top 10)</p></li>
+<li><p>Distribution of VM interfaces per subnets (top 10)</p></li>
+</ul>
+<p><a class="reference internal" href="../_images/image35.png"><img alt="image34" src="../_images/image35.png" style="width: 6.5in; height: 4.625in;" /></a></p>
+</div>
+<div class="section" id="instance-list-report">
+<h4>Instance List Report<a class="headerlink" href="#instance-list-report" title="Permalink to this headline">¶</a></h4>
+<p>The report shows the list of all AWS instances with some details on each
+VM:</p>
+<p><a class="reference internal" href="../_images/image36.png"><img alt="image35" src="../_images/image36.png" style="width: 6.5in; height: 1.19375in;" /></a></p>
+<p>Published: May 2019</p>
+<div class="line-block">
+<div class="line">Extreme Networks, Inc.</div>
+<div class="line">145 Rio Robles</div>
+<div class="line">San Jose, California 95134</div>
+<div class="line">Phone / +1 408.579.2800</div>
+<div class="line">Toll-free / +1 888.257.3000</div>
+</div>
+<p><a class="reference external" href="http://www.extremenetworks.com">www.extremenetworks.com</a></p>
+<p>© 2012–2014 Extreme Networks, Inc. All Rights Reserved.</p>
+<p>AccessAdapt, Alpine, Altitude, BlackDiamond, Direct Attach, EPICenter,
+ExtremeWorks Essentials, Ethernet Everywhere, Extreme Enabled, Extreme
+Ethernet Everywhere, Extreme Networks, Extreme Standby Router Protocol,
+Extreme Turbodrive, Extreme Velocity, ExtremeWare, ExtremeWorks,
+ExtremeXOS, Go Purple Extreme Solution, ExtremeXOS ScreenPlay, ReachNXT,
+Ridgeline, Sentriant, ServiceWatch, Summit, SummitStack, Triumph,
+Unified Access Architecture, Unified Access RF Manager, UniStack, XNV,
+the Extreme Networks logo, the Alpinelogo, the BlackDiamond logo, the
+Extreme Turbodrive logo, the Summit logos, and the Powered by ExtremeXOS
+logo are trademarks or registered trademarks of Extreme Networks, Inc.
+or its subsidiaries in the United States and/or other countries.</p>
+<p>sFlow is the property of InMon Corporation.</p>
+<p>Specifications are subject to change without notice.</p>
+<p>All other registered trademarks, trademarks, and service marks are
+property of their respective owners.</p>
+<p>For additional information on Extreme Networks trademarks, see
+<a class="reference external" href="http://www.extremenetworks.com/company/legal/trademarks">www.extremenetworks.com/company/legal/trademarks</a>.</p>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Connect</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Integration Verticals:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../security/index.html">Security</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../mobility/index.html">Mobility</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Private &amp; Public Cloud</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Private &amp; Public Cloud</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Private &amp; Public Cloud</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Kurt Semba.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/private-public-cloud/aws.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

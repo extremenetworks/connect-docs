@@ -1,5 +1,5 @@
-==========
-McAfee ePO
-==========
+===========
+JAMF Casper
+===========
 
-The McAfee ePolicy Orchestrator integration...
+The JAMF Casper integration...
