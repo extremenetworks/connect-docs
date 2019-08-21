@@ -16,7 +16,7 @@ Introduction
 This integration provides automation and enhanced security regarding AWS
 EC2 instances and security groups. Main use cases:
 
--  Manage AWS security groups through EMC (policies)
+-  Manage AWS security groups through XMC (policies)
 
 -  Automatically assign AWS EC2 instances to managed security groups
 
@@ -94,30 +94,30 @@ Th following prerequisites are required:
 Integration Overview
 ====================
 
-**The overall architecture is centered around the XMC policy domain.
+The overall architecture is centered around the XMC policy domain.
 Customers can create a dedicated policy domain with policies, service
 and rules that they want to use to protect their virtual instances. The
 Connect module’s configuration must mention this policy domain as so
 called managed domain and must map it to one or more AWS accounts and
-VPC networks.**
+VPC networks.
 
-**Once this domain gets enforced, Connect will**
+Once this domain gets enforced, Connect will
 
--  **compare the policy rules with the existing security groups within
-   the configured account’s network**
+-  compare the policy rules with the existing security groups within
+   the configured account’s network
 
--  **convert policy rules to security group rules and create / update
-   security groups as needed**
+-  convert policy rules to security group rules and create / update
+   security groups as needed
 
--  **Create / update XMC end-system groups for each managed domain &
-   policy**
+-  Create / update XMC end-system groups for each managed domain &
+   policy
 
-   -  **Group names: policyDomain__policyName**
+   -  Group name format: **policyDomain__policyName**
 
--  **Once an admin assigns an XMC end-system to one of the managed
+-  Once an admin assigns an XMC end-system to one of the managed
    groups, Connect will assign the corresponding security groups to the
    corresponding AWS instance in the cloud to actually apply the
-   corresponding security group rules.**
+   corresponding security group rules.
 
 |image0|
 
@@ -142,132 +142,132 @@ account.
 Managed Domains, ES Groups & Security Groups
 --------------------------------------------
 
-**
+
 The minimum configuration for this solution requires the admin to define
 at least one so called managed policy domain and map it to at least one
 account and VPC network (within that account). A managed policy domain
 is just a standard policy domain within XMC – it becomes a managed one
-by adding it to this Connect module’s configuration.**
+by adding it to this Connect module’s configuration.
 
-**Connect is actually not managing (modifying) the policy domain. Only
-the XMC admin is modifying it. But such domains are used by Connect to**
+Connect is actually not managing (modifying) the policy domain. Only
+the XMC admin is modifying it. But such domains are used by Connect to
 
--  **Create XMC end-system groups for each policy**
+-  Create XMC end-system groups for each policy
 
--  **Create AWS security groups for each policy within the list of
-   configured VPC networks**
+-  Create AWS security groups for each policy within the list of
+   configured VPC networks
 
-**Those auto-created XMC end-system groups and AWS security groups are
+Those auto-created XMC end-system groups and AWS security groups are
 considered managed as they can be created, updated and deleted by
-Connect. They should not be modified manually.**
+Connect. They should not be modified manually.
 
-**In regards to managed XMC end-system groups, Connect will only create
+In regards to managed XMC end-system groups, Connect will only create
 one end-system group for each managed policy domain and contained
 policy. No matter how many accounts are being synchronized. The reason
 for that is that those end-system groups represent exactly one policy
 and even if that policy is exported to multiple accounts, it is still
-representing the same policy.**
+representing the same policy.
 
 |image2|
 
 Mapping Domains to VPC Networks
 -------------------------------
 
-**
+
 When configuring how to map a managed domain to a VPC network in AWS the
-following rules apply:**
+following rules apply:
 
--  **One managed policy domain is mapped / exported to one or more VPC
-   networks**
+-  One managed policy domain is mapped / exported to one or more VPC
+   networks
 
--  **No VPC network can be assigned to more than one policy domain**
+-  No VPC network can be assigned to more than one policy domain
 
--  **Policy domains that are not configured within Connect won’t be
-   sync’ed to AWS**
+-  Policy domains that are not configured within Connect won’t be
+   sync’ed to AWS
 
--  **VPCs that are not configured within Connect won’t be altered
-   (“unmanaged” VPCs)**
+-  VPCs that are not configured within Connect won’t be altered
+   (“unmanaged” VPCs)
 
--  **Customers can manually create additional security groups in
-   “managed” VPC networks**
+-  Customers can manually create additional security groups in
+   “managed” VPC networks
 
--  **Changes to “managed” security groups will be overwritten on next
-   policy enforce**
+-  Changes to “managed” security groups will be overwritten on next
+   policy enforce
 
-**The image below visualizes valid and invalid configurations:**
+The image below visualizes valid and invalid configurations:
 
--  **Valid:**
+-  Valid:
 
-   -  **Map policy domain “Custom App1” to VPC network “Custom App1”**
+   -  Map policy domain “Custom App1” to VPC network “Custom App1”
 
-   -  **Map policy domain “Standard Apps” to two VPC networks**
+   -  Map policy domain “Standard Apps” to two VPC networks
 
-      -  **this will create the exact same security groups within both
-         VPC networks**
+      -  this will create the exact same security groups within both
+         VPC networks
 
-      -  **very useful for rules that you want to apply to all / most of
+      -  very useful for rules that you want to apply to all / most of
          your VPC networks as they apply some basic set of common
-         rules**
+         rules
 
-      -  **avoids config errors especially when the same rules have to
-         be managed for many VPC networks**
+      -  avoids config errors especially when the same rules have to
+         be managed for many VPC networks
 
--  **Not valid:**
+-  Not valid:
 
-   -  **The red arrow indicates a config error since the destination VPC
+   -  The red arrow indicates a config error since the destination VPC
       network “FinTech” is already a managed network from the “Standard
       Apps” policy domain. A VPC network cannot be “\ fed\ ” by more
-      than one policy domain.**
+      than one policy domain.
 
 |image3|
 
 VMs with multiple Interfaces
 ----------------------------
 
-**
-AWS allows you to create a VM with multiple NICs. This allows Connect to
-apply different security groups for each interface of such a VM.**
 
-**The image below shows two XMC end-systems which belong to a single AWS
+AWS allows you to create a VM with multiple NICs. This allows Connect to
+apply different security groups for each interface of such a VM.
+
+The image below shows two XMC end-systems which belong to a single AWS
 VM Connect creates an XMC end-system for each NIC on an AWS VM. Based on
 the different group assignment in XMC (one end-system is assigned to
 group Cloud__WebServer and the other to group Cloud__AppServer) the
 corresponding security groups are applied per instance interface in
-AWS.**
+AWS.
 
 |image4|
 
 Naming Convention
 -----------------
 
-**
+
 When creating XMC end-system groups and AWS security groups, Connect is
-following these naming conventions.**
+following these naming conventions.
 
 Security Group Name & Description
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**The name of each managed security group uses this syntax:
-extremePolicyDomain__extremePolicy**
+The name of each managed security group uses this syntax:
+*extremePolicyDomain__extremePolicy*
 
-**Example:
-Hospital__Doctor**
+Example:
+*Hospital__Doctor*
 
-**AWS is not using the name of a security group as its unique identifier
+AWS is not using the name of a security group as its unique identifier
 so it is allowed to use the same names on different VPCs (Connect will
 never create the same security group name within the same VPC). The
 security group ID is its identifier and is auto-generated by AWS when a
-new group is created.**
+new group is created.
 
-**Connect is also setting the description field of all managed groups.
+Connect is also setting the description field of all managed groups.
 The description is not used by Connect and is more meant to be useful
 for admins to understand that those groups are managed by Connect and
 should not be edited manually. Example:
 Managed by Extreme Connect - Referenced Domain / Policy: Hospital /
-Test**
+Test
 
-**This visualization shows an example of a security group name and how
-it is built based on the corresponding XMC policy.**
+This visualization shows an example of a security group name and how
+it is built based on the corresponding XMC policy.
 
 |image5|
 
@@ -276,49 +276,49 @@ it is built based on the corresponding XMC policy.**
 Security Group Tag
 ~~~~~~~~~~~~~~~~~~
 
-**Connect will add two tags to each managed security group it creates:**
+Connect will add two tags to each managed security group it creates:
 
--  **Name: this is just to indicate the name of the group and has no
-   further use**
+-  Name: this is just to indicate the name of the group and has no
+   further use
 
--  **ExtremePolicyId: this tag is a key identifier used by Connect. Each
+-  ExtremePolicyId: this tag is a key identifier used by Connect. Each
    AWS security group that contains this tag is considered a managed
    group by Connect. Ensure not to delete or modify this tag manually.
    It encodes the policy domain and the policy name that it is based on
-   (= that is refers to)**
+   (= that is refers to)
 
-**Example ExtremePolicyId tag:
-Hospital__Doctor**
+Example ExtremePolicyId tag:
+*Hospital__Doctor*
 
-**This tag is eventually used by Connect to identify the correct
-security group to be applied to an instance.**
+This tag is eventually used by Connect to identify the correct
+security group to be applied to an instance.
 
-**This visualization shows an example of the security group tags and how
-they are built based on the corresponding XMC policy.**
+This visualization shows an example of the security group tags and how
+they are built based on the corresponding XMC policy.
 
 |image6|
 
 Extreme End-System Groups
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**Each managed Extreme end-system group’s name will use this syntax:
-extremePolicyDomain----extremePolicy**
+Each managed Extreme end-system group’s name will use this syntax:
+*extremePolicyDomain----extremePolicy*
 
-**Example:
-Hospital__Patient**
+Example:
+*Hospital__Patient*
 
-**These end-system groups represent a specific policy you want to apply
+These end-system groups represent a specific policy you want to apply
 to a cloud-based instance (which is represented by an end-system in
 XMC). The description field lists the accounts and VPC networks that
-this end-system group is used for. Example:**
+this end-system group is used for. Example:
 
-**Managed by Connect for AWS accounts and VPCs: VPCs for account id
+*Managed by Connect for AWS accounts and VPCs: VPCs for account id
 snappy-bucksaw-168120: [datalab-network], VPCs for account id
-analytics-research-199618: [kurt-vpc-1, kurt-vpc-2]**
+analytics-research-199618: [kurt-vpc-1, kurt-vpc-2]*
 
-**This example also shows that it is a valid configuration to
+This example also shows that it is a valid configuration to
 synchronize one policy domain into multiple AWS accounts and even
-multiple VPC networks within a single account.**
+multiple VPC networks within a single account.
 
 |image7|
 
@@ -328,38 +328,38 @@ Sites
 Manage XMC Sites
 ~~~~~~~~~~~~~~~~
 
-**Once enabled, this integration will automatically create the site
-location**
+Once enabled, this integration will automatically create the site
+location
 
 **/World/Cloud**
 
-**This site node will contain all devices that are retrieved from any
+This site node will contain all devices that are retrieved from any
 cloud provider (AWS, Azure and GCP). Beneath the main node, the node
-that will hold all AWS related devices is created automatically**
+that will hold all AWS related devices is created automatically
 
 **/World/Cloud/AWS**
 
-**This is how it looks like in the UI if all three Cloud integration
-have been enabled:**
+This is how it looks like in the UI if all three Cloud integration
+have been enabled:
 
 |image8|
 
 Assign Devices
 ~~~~~~~~~~~~~~
 
-**When the user clicks on the /World/Cloud/AWS list item the list of all
+When the user clicks on the /World/Cloud/AWS list item the list of all
 retrieved AWS regions will be displayed as sub-sites and the list of all
 devices will automatically be filtered for those coming from AWS. Each
-device will show the site it belongs to:**
+device will show the site it belongs to:
 
 |image9|
 
 Assign End-Systems
 ~~~~~~~~~~~~~~~~~~
 
-**Since the end-systems are assigned to a switch and that switch belongs
+Since the end-systems are assigned to a switch and that switch belongs
 to a site, end-systems automatically are assigned to the corresponding
-sites as well ( the AWS region they run in).**
+sites as well ( the AWS region they run in).
 
 |image10|
 
@@ -465,29 +465,29 @@ Creating End-Systems
 This integration will create an end-system entry in XMC for each AWS
 instance’s network interface.
 
-The following table shows the attributes mapping from AWS instances to
+The following list shows the attributes mapping from AWS instances to
 XMC end-systems
 
-===================================================================== =================================================================================
-AWS Instance                                                          XMC end-system
-===================================================================== =================================================================================
-Taken from the intance’s network interface’s “association” attribute: Hostname and IP address
-                                                                     
--  | If Public DNS is provided:                                      
-   | Use Public DNS name and Public IP                               
-                                                                     
--  | Else:                                                           
-   | Use Private DNS name and Private IP                             
-Instance type                                                         Device family
-State                                                                 State:
-                                                                     
-                                                                      -  RUNNING ACCEPT
-                                                                     
-                                                                      -  Everything else DISCONNECTED
-Subnet                                                                Switch IP
-                                                                      XMC device IP is auto-generated based on the CIDR of the corresponding AWS subnet
-Instance interface                                                    Connected Switch Port – also shows: zone and instance interface MAC address
-===================================================================== =================================================================================
+-  XMC end-system hostname and IP address:
+
+   -  AWS intance’s NIC’s "association" attribute: use Public DNS and IP if provided
+
+-  XMC end-system device family:
+
+   -  AWS instance type
+
+-  XMC end-system state:
+
+   -  AWS state. If it is *RUNNING* Connect maps it to *ACCEPT*. For everything else: *DISCONNECTED*
+
+-  XMC end-system switch IP:
+
+   -  AWS subnet
+
+-  XMC end-system switch port:
+
+   -  AWS instance interface. Also shows zone and interface MAC
+
 
 All end-systems will be shown in XMC as discovered through
 “Auto-Tracking”. By assigning end-systems to the corresponding switches,
@@ -721,30 +721,28 @@ section allows admins to configure AWS account specific information:
      domainName:vpcId1,vpcId2;domainName2:vpcId5,vpcId7. Example:
      Hospital:vpc-d8c5ada1
 
--  Default Region:
+-  | Default Region:
+   | Used when creating new security groups. The AWS API requires to set a
+     default region on this operation. Default value: us-east-1
 
-Used when creating new security groups. The AWS API requires to set a
-default region on this operation. Default value: us-east-1
+     All available regions: us-gov-west-1, us-east-1, us-east-2, us-west-1,
+     us-west-2, eu-west-1, eu-west-2, eu-west-3, eu-central-1, ap-south-1,
+     ap-southeast-1, ap-southeast-2, ap-northeast-1, ap-northeast-2,
+     sa-east-1, cn-north-1, cn-northwest-1, ca-central-1
 
-All available regions: us-gov-west-1, us-east-1, us-east-2, us-west-1,
-us-west-2, eu-west-1, eu-west-2, eu-west-3, eu-central-1, ap-south-1,
-ap-southeast-1, ap-southeast-2, ap-northeast-1, ap-northeast-2,
-sa-east-1, cn-north-1, cn-northwest-1, ca-central-1
+-  | Regions to ignore:
+   | Semicolon separated list of region names that should be ignored when
+     retrieving any data from AWS. Tests have shown that some regions seem to
+     have special authorization and usually (for most enterprise customers)
+     produce errors when trying to query them (China, government). If empty,
+     Connect will try to retrieve data from all regions.
 
--  Regions to ignore:
+     All available regions: us-gov-west-1, us-east-1, us-east-2, us-west-1,
+     us-west-2, eu-west-1, eu-west-2, eu-west-3, eu-central-1, ap-south-1,
+     ap-southeast-1, ap-southeast-2, ap-northeast-1, ap-northeast-2,
+     sa-east-1, cn-north-1, cn-northwest-1, ca-central-1
 
-Semicolon separated list of region names that should be ignored when
-retrieving any data from AWS. Tests have shown that some regions seem to
-have special authorization and usually (for most enterprise customers)
-produce errors when trying to query them (China, government). If empty,
-Connect will try to retrieve data from all regions.
-
-All available regions: us-gov-west-1, us-east-1, us-east-2, us-west-1,
-us-west-2, eu-west-1, eu-west-2, eu-west-3, eu-central-1, ap-south-1,
-ap-southeast-1, ap-southeast-2, ap-northeast-1, ap-northeast-2,
-sa-east-1, cn-north-1, cn-northwest-1, ca-central-1
-
-Example (and default value): us-gov-west-1;cn-north-1;cn-northwest-1
+     Example (and default value): *us-gov-west-1;cn-north-1;cn-northwest-1*
 
 |image15|
 
@@ -764,8 +762,8 @@ discussed in detail within this document. Some important options are:
      (in this case: aws). Format example:
      cp=aws;iId=4253868206409840076;nwIfFp=u7wnZ-pBoYg=;accN=analytics-research-199618
 
-This value must not be the same as the configured value for "Custom
-field to use"!
+     This value must not be the same as the configured value for "Custom
+     field to use"!
 
 -  | HTTP client socket timeout in milliseconds:
    | HTTP socket timeout in milliseconds for all HTTP connections to the
@@ -777,27 +775,23 @@ field to use"!
      the AWS API. Defines how much time is allowed for Connect to open
      up a socket to the AWS API. Default: 10000 (=10 seconds)
 
--  Sync Policies with AWS Security Groups:
+-  | Sync Policies with AWS Security Groups:
+   | When set to true, Connect will synchronize (export) the policies from
+     all ‘managed’ policy domains to AWS security groups. It will create one
+     security group for each policy from each ‘managed’ XMC policy domain.
 
-When set to true, Connect will synchronize (export) the policies from
-all ‘managed’ policy domains to AWS security groups. It will create one
-security group for each policy from each ‘managed’ XMC policy domain.
+-  | Sync Policies with XMC end-system groups:
+   | When set to true, Connect will synchronize the policies from all
+     *managed* policy domains to XMC end-system groups. It will create one
+     end-system group for each policy from each *managed* XMC policy domain.
 
--  Sync Policies with XMC end-system groups:
+-  | Assign AWS security groups based on XMC end-system groups:
+   | When set to true will assign EC2 instances interfaces to AWS security
+     groups based on the end-system groups that the corresponding end-system
+     is assigned to in XMC/EAC. The mapping between EC2 instance interface
+     and XMC end-system is based on the MAC address
 
-When set to true, Connect will synchronize the policies from all
-‘managed’ policy domains to XMC end-system groups. It will create one
-end-system group for each policy from each ‘managed’ XMC policy domain.
-
--  Assign AWS security groups based on XMC end-system groups:
-
-When set to true will assign EC2 instances interfaces to AWS security
-groups based on the end-system groups that the corresponding end-system
-is assigned to in XMC/EAC. The mapping between EC2 instance interface
-and XMC end-system is based on the MAC address
-
--  | Overwrite XMC end-systems' Device Family with instance machine
-     type:
+-  | Overwrite XMC end-systems' Device Family with instance machine type:
    | If enabled, uses the instance type from AWS to overwrite the device
      family field for imported end-systems in XMC.
 
@@ -820,21 +814,19 @@ and XMC end-system is based on the MAC address
    | Enable this to remove a device from all other groups when it is
      moved to the decommission group
 
--  Regularly auto-enforce policies to AWS:
+-  | Regularly auto-enforce policies to AWS:
+   | When enabled, Connect automatically verify whether the "managed" policy
+     domains are correctly synchronized to the configured VPCs. This will
+     ensure that your policy configuration is kept consistent with your
+     security groups within AWS even is someone manually changes those
+     "managed" security groups in AWS
 
-When enabled, Connect automatically verify whether the "managed" policy
-domains are correctly synchronized to the configured VPCs. This will
-ensure that your policy configuration is kept consistent with your
-security groups within AWS even is someone manually changes those
-"managed" security groups in AWS
-
--  Regularly auto-enforce:
-
-When enabled, Connect automatically verify whether the "managed" policy
-domains are correctly synchronized to the configured VPCs. This will
-ensure that your policy configuration is kept consistent with your
-security groups within AWS even is someone manually changes those
-"managed" security groups in AWS
+-  | Regularly auto-enforce:
+   | When enabled, Connect automatically verify whether the "managed" policy
+     domains are correctly synchronized to the configured VPCs. This will
+     ensure that your policy configuration is kept consistent with your
+     security groups within AWS even is someone manually changes those
+     "managed" security groups in AWS
 
 Alarm and Event Messages
 ========================
