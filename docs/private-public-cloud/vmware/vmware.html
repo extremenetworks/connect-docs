@@ -1,0 +1,299 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>VMware vSphere &#8212; Connect 3.6 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="prev" title="Amazon Web Services" href="../aws/aws.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="vmware-vsphere">
+<h1><a class="toc-backref" href="#id1">VMware vSphere</a><a class="headerlink" href="#vmware-vsphere" title="Permalink to this headline">¶</a></h1>
+<p>The Vmware vSphere integration offers provisioning of virtual machines
+in the network as well as automating the creation of virtual networks
+based on end-system access groups. In addition, data within Extreme
+Management Center is enriched for each end-system and conversely made
+available within vSphere.</p>
+<div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#vmware-vsphere" id="id1">VMware vSphere</a></p>
+<ul>
+<li><p><a class="reference internal" href="#module-configuration" id="id2">Module Configuration</a></p></li>
+<li><p><a class="reference internal" href="#verification" id="id3">Verification</a></p></li>
+</ul>
+</li>
+</ul>
+</div>
+<p><a class="reference internal" href="../../_images/image110.png"><img alt="image1" src="../../_images/image110.png" style="width: 5.77014in; height: 3.42083in;" /></a></p>
+<div class="section" id="module-configuration">
+<h2><a class="toc-backref" href="#id2">Module Configuration</a><a class="headerlink" href="#module-configuration" title="Permalink to this headline">¶</a></h2>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 31%" />
+<col style="width: 69%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Configuration Option</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Username:</p></td>
+<td><p>Username used to connect to the vSphere web service.</p>
+<p>Read/Write/Execute permissions required.</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p>Password:</p></td>
+<td><p>Password used to connect to the vSphere web service.</p></td>
+</tr>
+<tr class="row-even"><td><p>VMware Webservice URL :</p></td>
+<td><p>Web service URL of the VMware vSphere server.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Module enabled :</p></td>
+<td><p>Enables and Disables Module.</p></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><dl class="simple">
+<dt><strong>Outgoing data format</strong>: The format of the Extreme Control data</dt><dd><p>(like last seen time, switch IP, switch port, etc.) that is
+written to the description fields of the VMs within VMware or XEN.
+You can customize the appearance and what information you want to
+include/exclude from there. Hint: For the VMware vSphere client
+the annotation field is limited in size. The default outgoing
+format is very close to the maximum string length allowed for this
+field. If you want to add additional information to this field
+consider replacing it with some of the existing default value.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Format of the incoming data</strong>: The format of the data that is</dt><dd><p>coming from VMware or XEN and that is written to the custom field.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Create Private VLAN Entries</strong>: If set to false, the Datacenter</dt><dd><p>manager will not automatically create any pVLAN entries on
+dvSwitches even if you configured any. This feature is disabled
+per default and needs to be enabled manually if needed.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Create Portgroups from End-system Groups</strong>: If set to true, the</dt><dd><p>Datacenter manager will automatically create new portgroups within
+VMware based on the Extreme Control NAC end-system groups and your
+other configuration.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Update Portgroup VLAN IDs</strong>: Only useful if the setting above is</dt><dd><p>set to true. If you change the “vlan=XXXX” value within an
+end-system group this setting will automatically also change your
+portgroup VLAN IDs accordingly.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Use Global End-system Groups:</strong> Only if this is set to true, the</dt><dd><p>VMware module will have access to the global end-system groups
+that are provided by the Extreme Control module (NAC end-system
+groups) within the main module. This is necessary if you want to
+automatically create portgroups based on Extreme Control NAC
+end-system groups.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Enable Custom Attributes</strong>: En-/Disables the creation and updates</dt><dd><p>of Custom Attributes for vCenter Servers.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Custom Attributes Data Format</strong>: This text field allows the</dt><dd><p>configuration of Custom Attributes for vCenter Servers. Extreme
+Connect will create and update these attributes for each VM and
+allow for searching and sorting for this data within vCenter. Each
+attribute has to be configured on a single line and follow the
+format: NAME=VALUE where NAME is the name of the Custom Attribute
+and VALUE is a free text that may utilize all variables that are
+available in the “Outgoing data format” option. If a VM should use
+more than one network interface, the data for each variable is
+presented as “NIC1DATA/NIC2DATA/…”.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Deletion Group</strong>: Name of the portgroup that a VM will be</dt><dd><p>redirected to if it’s current endsystem group is deleted.</p>
+</dd>
+</dl>
+</li>
+<li><div class="line-block">
+<div class="line"><strong>Port Group Import</strong>: Enables the automatic creation of
+  endsystemgroups in Extreme Control based on port groups. The
+  port group name will be used for the endsystem group. Be aware
+  that the delimiter also applies here. In the default
+  configuration, the text after the last delimiter will be
+  truncated from the name.
+| i.e. <strong>MyPortGroup_VLAN1_dvSwitch0</strong> will be imported as
+  <strong>MyPortGroup_VLAN1</strong> in Extreme Control. VLAN IDs will be
+  updated if they change.</div>
+</div>
+</li>
+<li><dl class="simple">
+<dt><strong>Automatic Enforce after import</strong>: Enables the automatic enforcement</dt><dd><p>of all NAC appliances and the policy domain (only for extended
+import) if a portgroup was imported.</p>
+</dd>
+</dl>
+</li>
+<li><div class="line-block">
+<div class="line"><strong>Extended PortGroup Import</strong>: Also creates NAC Configuration and
+  policy profiles during PortGroup Import. Requires the options
+  for <strong>NAC Configuration</strong>, <strong>Policy Domain</strong> and <strong>Forward as
+  Tagged</strong> also to be defined. Be aware that the truncated port
+  group name will also be used as the VLAN name and must adhere to
+  naming limitations.
+| In a special case, a VNI can be supplied by prefixing
+  “VNI-#####-“ (with ##### being the VNI ID) to the portgroup
+  name. i.e. “VNI-1234-PortGroup” will create a policy/control
+  configuration with the VLAN ID set in the portgroup and the VLAN
+  name VNI-1234-PortGroup. An EXOS switch can then use the
+  VNI-1234 part to setup the VxLAN mapping for that VLAN.</div>
+</div>
+</li>
+<li><dl class="simple">
+<dt><strong>Add VNI to Policy Map</strong> Adds the VNI ID from the Portgroup name to</dt><dd><p>one of the custom fields in the policy mapping configuration in
+Control. This can be used to supply the VNI to a target switch
+using RADIUS to create a dynamic VxLAN configuration.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Enable PortGroup Import Removal</strong>: Delete the NAC Configuration</dt><dd><p>and/or End-System Group if the portgroup is deleted.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Hypervisor Import:</strong> Creates a Device in XMC Network for each</dt><dd><p>Hypervisor, using the pNIC, vNIC and (d)vSwitch portgroups to
+generate the Device Ports. LLDP data will be used if present to
+indicate neighbors on ports.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>EndSystem Events:</strong> Updates the Control EndSystem Table if Radius</dt><dd><p>or Kerberos authentication is not available. Events will use the
+Hypervisor Device as the connecting Switch instead of the physical
+LAN switch provided via Radius.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Stop then start the Extreme Management Center services (refer to Extreme
+Connect Installation section for instructions).</p>
+</div>
+<div class="section" id="verification">
+<h2><a class="toc-backref" href="#id3">Verification</a><a class="headerlink" href="#verification" title="Permalink to this headline">¶</a></h2>
+<p>Within the vSphere Client, click on a virtual machine and then on the
+“Summary” tab on the right side. At the bottom of this tab there should
+be an annotations field that should contain the corresponding data from
+Extreme Management Center (for example, information on the switch port
+and switch IP to which this VM is physically connected).</p>
+<p><a class="reference internal" href="../../_images/image210.png"><img alt="image2" src="../../_images/image210.png" style="width: 3.06126in; height: 3.88857in;" /></a></p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">Connect</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Integration Verticals:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../security/index.html">Security</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../mobility/index.html">Mobility</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Public &amp; Private Cloud</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Public &amp; Private Cloud</a><ul>
+      <li>Previous: <a href="../aws/aws.html" title="previous chapter">Amazon Web Services</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Kurt Semba.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../_sources/private-public-cloud/vmware/vmware.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

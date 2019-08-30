@@ -1106,6 +1106,7 @@ property of their respective owners.
 For additional information on Extreme Networks trademarks, see
 `www.extremenetworks.com/company/legal/trademarks <http://www.extremenetworks.com/company/legal/trademarks>`__.
 
+.. _cloud_aws:
 
 
 .. |image0| image:: media/image1.png

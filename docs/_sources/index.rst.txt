@@ -18,6 +18,8 @@ Extreme Connect Documentation
    security/index
    mobility/index
    private-public-cloud/index
+   it-operations/index
+   faq/faq
    
 
 Getting Started

@@ -1,0 +1,749 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Microsoft SCCM Integration &#8212; Connect 3.6 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="prev" title="IT Operations" href="../index.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="microsoft-sccm-integration">
+<h1><a class="toc-backref" href="#id2">Microsoft SCCM Integration</a><a class="headerlink" href="#microsoft-sccm-integration" title="Permalink to this headline">¶</a></h1>
+<p><strong>Abstract</strong>: This document provides an overview of Extreme Networks’
+Connect integration with Microsoft’s System Center Configuration Manager</p>
+<div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#microsoft-sccm-integration" id="id2">Microsoft SCCM Integration</a></p>
+<ul>
+<li><p><a class="reference internal" href="#overview" id="id3">Overview</a></p></li>
+<li><p><a class="reference internal" href="#design" id="id4">Design</a></p>
+<ul>
+<li><p><a class="reference internal" href="#benefits" id="id5">Benefits</a></p></li>
+<li><p><a class="reference internal" href="#components" id="id6">Components</a></p></li>
+<li><p><a class="reference internal" href="#architecture" id="id7">Architecture</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#installation-and-upgrade" id="id8">Installation and Upgrade</a></p>
+<ul>
+<li><p><a class="reference internal" href="#id1" id="id9">Overview</a></p></li>
+<li><p><a class="reference internal" href="#prerequisites" id="id10">Prerequisites</a></p></li>
+<li><p><a class="reference internal" href="#installing-sccm-adapter" id="id11">Installing SCCM Adapter</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#configuration" id="id12">Configuration</a></p>
+<ul>
+<li><p><a class="reference internal" href="#configure-connect-sccm-module" id="id13">Configure Connect SCCM Module</a></p></li>
+<li><p><a class="reference internal" href="#configure-sccm-adapter" id="id14">Configure SCCM Adapter</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#verification" id="id15">Verification</a></p>
+<ul>
+<li><p><a class="reference internal" href="#verify-group-memberships" id="id16">Verify Group Memberships</a></p></li>
+<li><p><a class="reference internal" href="#verify-custom-data" id="id17">Verify Custom Data</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#troubleshooting" id="id18">Troubleshooting</a></p>
+<ul>
+<li><p><a class="reference internal" href="#adapter-functionality" id="id19">Adapter Functionality</a></p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="overview">
+<h2><a class="toc-backref" href="#id3">Overview</a><a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>This guide details the design, installation, and configuration of
+Extreme Networks Connect integration with Microsoft System Center
+Configuration Manager.</p>
+<p>Administrators that have to manage large Microsoft environments with
+both SCCM and Extreme Control will benefit from this integration in
+multiple ways: it will provide them with a deeper insight into device
+types, network adapter types, last logged on users, netbios names and so
+forth from a single pain of glass (XMC). It will also enable them to
+easily manage all MAC addresses (wired and wireless) from SCCM within
+Extreme Control. This helps to streamline operations and enhance
+troubleshooting.</p>
+<p>The solution also enables customers to assess their managed Windows
+machines for missing Microsoft software patches. The results of this
+assessment will be available within Extreme Access Control’s assessment
+process.</p>
+<p>Like any other Extreme Connect integration, the MS SCCM integration
+requires an Extreme Management Center (XMC) Advanced license.</p>
+</div>
+<div class="section" id="design">
+<h2><a class="toc-backref" href="#id4">Design</a><a class="headerlink" href="#design" title="Permalink to this headline">¶</a></h2>
+<p>The solution is based on two components:</p>
+<ol class="arabic simple">
+<li><p>The Extreme Microsoft SCCM Connect module which runs on the XMC
+server. It reguarly queries the latest computer data from the
+corresponding adapter running on the SCCM server (see below) and uses
+it to update the end-systems and their group membership within
+Extreme Control</p></li>
+<li><p>The Extreme SCCM adapter which runs on the SCCM server. It is
+implemented as runnable jar file and executes Powershell commands to
+regularly query the SCCM database for the latest computer data. It
+also provides a web service which can be queried by the corresponding
+SCCM Connect module running on the XMC server (see above) the web
+service returns the list of all computers and their data to XMC.</p></li>
+</ol>
+<div class="section" id="benefits">
+<h3><a class="toc-backref" href="#id5">Benefits</a><a class="headerlink" href="#benefits" title="Permalink to this headline">¶</a></h3>
+<p>Utilizing the Extreme Connect SCCM integration, the following benefits
+can be achieved:</p>
+<ul class="simple">
+<li><p>Automatically synchronize all MAC addresses (wired and wireless)
+managed by SCCM into an Extreme Control end-system group (single
+group for all MACs) and thus <strong>provide automatic network provisioning
+of SCCM-managed devices</strong> through Extreme Control</p></li>
+<li><p>Automatically <strong>synchronize computer data</strong> like hardware device
+type, operating system, last logged on user, netbios name, computer
+id and network adapter type from SCCM into XMC. This provide
+administrators and help desk personnel with the unique ability to get
+deep user and device insight within a single management system (XMC)
+and thus improves time to resolution and user experience</p></li>
+<li><p>Optionally queries all managed computers via remote WMI calls to get
+any missing Microsoft Software Updates. Provides those missing
+patches as assessment results within Extreme Access Control which
+allows customers to <strong>quarantine unpatched devices</strong>.</p></li>
+</ul>
+</div>
+<div class="section" id="components">
+<h3><a class="toc-backref" href="#id6">Components</a><a class="headerlink" href="#components" title="Permalink to this headline">¶</a></h3>
+<p>Extreme Networks Components</p>
+<p>Always required:</p>
+<ul>
+<li><div class="line-block">
+<div class="line">Extreme Networks Management Center 8.2.0 or above with Advanced
+License</div>
+<div class="line">(NMS-ADV-XXX)</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">Extreme Networks SCCM adapter</div>
+<div class="line">(zip package – no extra license required)</div>
+</div>
+</li>
+</ul>
+</div>
+<div class="section" id="architecture">
+<h3><a class="toc-backref" href="#id7">Architecture</a><a class="headerlink" href="#architecture" title="Permalink to this headline">¶</a></h3>
+<p>The following architecture shows how the solution building blocks
+interact to achieve the final result.</p>
+<p>On the right hand side, the Extreme SCCM adapter, which needs to be
+installed and run on the SCCM server, is shown. The adapter consists of
+two parts:</p>
+<ol class="arabic simple">
+<li><p>The “data manager” uses PowerShell commands to retrieve various data
+about all managed computers from SCCM. That data is parsed and
+stored/cached within the adapter. This process of retrieving all
+computer data and updating the adapter’s cache is performed on a
+scheduled basis which can be configured using the config file.</p></li>
+<li><p>The “web service” is providing a web interface into the adapter and
+is running on all IP addresses of the SCCM server it is installed on.
+The port it runs on can be configured. It will return a list of all
+computer data in JSON format encrypted using a pre-shared key.</p></li>
+</ol>
+<p>On the left hand side, Extreme Management Center with the Connect SCCM
+module is displayed. The SCCM module will regularly call the adapter’s
+web service (see above) to retrieve the list of all computer data. It
+will use the configured “password” as the pre-shared key in order to
+decrypt the incoming data. It will then deserialize the given JSON data
+into computer objects then use it to update the corresponding
+end-systems’ custom fields and group memeberships in Extreme Control.</p>
+<p><a class="reference internal" href="../../_images/image115.png"><img alt="image1" src="../../_images/image115.png" style="width: 5.3125in; height: 2.69792in;" /></a></p>
+</div>
+</div>
+<div class="section" id="installation-and-upgrade">
+<h2><a class="toc-backref" href="#id8">Installation and Upgrade</a><a class="headerlink" href="#installation-and-upgrade" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h3><a class="toc-backref" href="#id9">Overview</a><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>This section will not detail the installation steps for Extreme Connect.
+When installing or upgrading to XMC v8 you will automatically have
+Connect installed if you also provide an advanced license (ADV).</p>
+<p>This section will provide details on how to upgrade or install the SCCM
+adapter on your SCCM server.</p>
+</div>
+<div class="section" id="prerequisites">
+<h3><a class="toc-backref" href="#id10">Prerequisites</a><a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="software-requirements">
+<h4>Software Requirements<a class="headerlink" href="#software-requirements" title="Permalink to this headline">¶</a></h4>
+<p>Extreme Networks components:</p>
+<ul>
+<li><div class="line-block">
+<div class="line">Management Center version 8.2.0 or above with an Advanced License
+(NMS-ADV) installed:</div>
+<div class="line"><a class="reference external" href="http://www.extremenetworks.com/product/management-center">http://www.extremenetworks.com/product/management-center</a></div>
+</div>
+</li>
+<li><p>SCCM adapter: starting with XMC v8.2.0, the adapter can be downloaded
+as ZIP file from your XMC server using this URL:
+<a class="reference external" href="https://XMC_IP:8443/connect/SCCM/ConnectSccmAdapter.zip">https://XMC_IP:8443/connect/SCCM/ConnectSccmAdapter.zip</a></p></li>
+</ul>
+<p>Other components:</p>
+<ul class="simple">
+<li><p>Java 8 on the SCCM server (see preparation steps below)</p></li>
+</ul>
+</div>
+<div class="section" id="preparation">
+<h4>Preparation<a class="headerlink" href="#preparation" title="Permalink to this headline">¶</a></h4>
+<p>Install Java on the SCCM Server</p>
+<p>The SCCM adapter is provided as executable jar file and thus requires
+Java 8 to run properly. Please install the Java 8 runtime environment or
+upgrade to 8 before continuing.</p>
+<p>Powershell</p>
+<p>The adapter has been tested to run with Powershell v2 and v4.</p>
+</div>
+</div>
+<div class="section" id="installing-sccm-adapter">
+<h3><a class="toc-backref" href="#id11">Installing SCCM Adapter</a><a class="headerlink" href="#installing-sccm-adapter" title="Permalink to this headline">¶</a></h3>
+<p>The SCCM adapter is provided as a zip package (ConncetSccmAdapter.zip)
+that you can download from your XMC server at URL</p>
+<p>The package needs to be copied to your SCCM server and inflated to any
+folder. It is recommended to create and use this folder to copy the
+files into:</p>
+<p><em>C:Program FilesExtreme NetworksSCCM Adapter</em></p>
+<p>Files contained within the zip file:</p>
+<ol class="arabic">
+<li><p>ConnectSccmAdapter-&lt;version&gt;.jar: the actual adapter executable jar
+file that runs both the data manager as the web service</p></li>
+<li><p>ConnectSccmAdapter.config: the configuration file</p></li>
+<li><p>log4j.properties the log config file. There is no need to touch this
+file – configure the log level through the main config file (see
+above)</p>
+<p>Ensure that all these files are always kept in the same folder. The
+adapter jar will search for both the config file and the
+log4j.properties file in its running directory.</p>
+<p>Now configure the adapter see <strong>Configure SCCM Adapter</strong></p>
+<p>Now configure the Connect SCCM module see <strong>Configure Connect SCCM Module</strong> Configure SCCM Adapter</p>
+</li>
+</ol>
+<div class="section" id="test-the-sccm-adapter">
+<h4>Test the SCCM Adapter<a class="headerlink" href="#test-the-sccm-adapter" title="Permalink to this headline">¶</a></h4>
+<p>After you have configured the adapter through both the main config file
+and the PowerShell script you should test the adapter manually to ensure
+proper workings. The recommended test procedure is:</p>
+<ol class="arabic">
+<li><div class="line-block">
+<div class="line">Test the adapter: we recommend setting the log-level for the
+adapter to “DEBUG” before testing the adapter (config file:
+<em>ConnectSccmAdapter.config</em>). That way, proper functionality can be
+validated easily.</div>
+<div class="line">Open a Command prompt of PowerShell command, navigate to your SCCM
+folder and start the agent using this command:</div>
+</div>
+<p><a class="reference internal" href="../../_images/image214.png"><img alt="image2" src="../../_images/image214.png" style="width: 5.94792in; height: 0.86458in;" /></a></p>
+<p>The output should be similar to what you see in the diagram above. If
+you see any errors or no output then check the adapter’s log file
+(file: <em>ConnectSccmAdapter.log</em>) or contact an Extreme
+representative. The adapter will start executing the PowerShell
+commands. Open the adapter’s log file and validate its content. You
+should see computer data, no errors or warnings and at the end of
+each iteration / data retrieval you should see a log entry similar to
+this one:</p>
+<p><em>Successfully imported 1000 computers with a total of 2000 network
+adapters (=MACs) from SCCM!</em></p>
+</li>
+</ol>
+<ol class="arabic" start="2">
+<li><p>Test the adapter’s web service: the final step in testing the
+adapter’s functionality is to open your browser and point it to the
+IP address of your SCCM server including the HTTP port you have
+configured the adapter to run on. Format:</p>
+<p><em>http://&lt;SCCM_IP&gt;:&lt;adapter_port&gt;</em></p>
+<p>When executed, you should get a lot of unreadable text as a result
+but no error. The reason the retrieved data is unreadable is that it
+is encrypted using the pre-shared key you configured. When you called
+that web service using your browser you should also see extra logs
+within the adapter’s log file.</p>
+</li>
+<li><p>Full test: Once you configured the corresponding Connect SCCM module
+(<strong>Configure Connect SCCM Module</strong>), ensure to set its log level to
+DEBUG as well. Wait for the next synchronization (you can set the
+poll interval to a low value like 60 seconds to force a quick
+synchronization for testing purposes) check the NetSight server log
+file to any success or error messages in regards to this integration.</p></li>
+</ol>
+</div>
+<div class="section" id="install-the-sccm-adapter-as-windows-scheduled-task">
+<h4>Install the SCCM Adapter as Windows Scheduled Task<a class="headerlink" href="#install-the-sccm-adapter-as-windows-scheduled-task" title="Permalink to this headline">¶</a></h4>
+<p>After you have extracted the required adapter files, configured the
+adapter through the config file and manually tested the adapter’s
+functionality it is time to create a Windows Scheduled Task that will
+ensure that the adapter will automatically be started on each server
+(re-) start, independent of any logged in user session. This will
+emulate a Windows Service to some extent (it still is not a proper
+Windows Service but an executable jar that is started / stopped through
+the Windows Task Scheduler!). Follow the step below to achieve this
+goal:</p>
+<ol class="arabic">
+<li><div class="line-block">
+<div class="line">Open the Windows Task Scheduler by either searching for it</div>
+<div class="line"><a class="reference internal" href="../../_images/image38.png"><img alt="image3" src="../../_images/image38.png" style="width: 2.21875in; height: 1.55387in;" /></a></div>
+</div>
+<div class="line-block">
+<div class="line">Or navigating to</div>
+<div class="line"><em>Control Panel -&gt; System And Security -&gt; Administrative tools -&gt;
+Task Scheduler</em></div>
+</div>
+<p><a class="reference internal" href="../../_images/image43.png"><img alt="image4" src="../../_images/image43.png" style="width: 5.66667in; height: 4.05703in;" /></a></p>
+</li>
+<li><div class="line-block">
+<div class="line">Create a new Basic Task</div>
+<div class="line"><a class="reference internal" href="../../_images/image53.png"><img alt="image5" src="../../_images/image53.png" style="width: 1.89583in; height: 0.78125in;" /></a></div>
+</div>
+</li>
+<li><p>Provide a useful name and description. Example:</p>
+<p><a class="reference internal" href="../../_images/image63.png"><img alt="image6" src="../../_images/image63.png" style="width: 6.27083in; height: 1.98958in;" /></a></p>
+</li>
+<li><div class="line-block">
+<div class="line">Set the trigger to run the task when the computer starts</div>
+<div class="line"><a class="reference internal" href="../../_images/image73.png"><img alt="image7" src="../../_images/image73.png" style="width: 4.10417in; height: 2.5in;" /></a></div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">Set the action to “start a program”</div>
+<div class="line"><a class="reference internal" href="../../_images/image83.png"><img alt="image8" src="../../_images/image83.png" style="width: 4.23958in; height: 1.88542in;" /></a></div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">Before we can tell the wizard how to start the adapter we need to
+retrieve the install path of your Java runtime environment
+(location of your java.exe). To find out, open a Command prompt and
+type <strong>where java</strong> and copy the resulting full path to your
+java.exe:</div>
+<div class="line"><a class="reference internal" href="../../_images/image93.png"><img alt="image9" src="../../_images/image93.png" style="width: 4.1875in; height: 0.9375in;" /></a></div>
+</div>
+</li>
+<li><p>The next step within the task wizard is to define which program to
+start and how / where. It consists of three options:</p>
+<ol class="loweralpha">
+<li><p>Program: This is NOT the SCCM adapter but rather the absolute path
+to your java executable (as determined in the earlier step,
+include the java.exe name). You might have to put this path in
+double-quotes if it contains empty spaces. Examples:</p>
+<p><em>C:\ProgramData\Oracle\Java\javapath\java.exe</em></p>
+<p>Or:</p>
+<p><em>“C:\Program Files (x86)\Java\jre1.8.0_101\bin\java.exe”</em></p>
+</li>
+<li><p>Arguments: provide two arguments for the java.exe program,
+separated by a space:</p>
+<ol class="lowerroman">
+<li><p>The –jar tells java that is should expect a jar file which
+needs to be executed</p></li>
+<li><p>The absolute path to the SCCM adapter jar (including the name
+of the adapter jar) – <strong>enclosed in double-quotes</strong> if it
+contains spaces</p>
+<p>Example: <em>-jar “C:Program FilesExtreme NetworksSCCM
+AdapterConnectSccmAdapter-2.0.0.jar”</em></p>
+</li>
+</ol>
+</li>
+<li><div class="line-block">
+<div class="line">Folder to start in: it’s important to provide the absolute path
+to the SCCM adapter (without the adapter jar name itself, just
+the path/folder). This time, <strong>do NOT enclosed it in
+double-quotes</strong> even if it contains spaces! Example:</div>
+<div class="line"><em>C:Program FilesExtreme NetworksSCCM Adapter</em></div>
+</div>
+<p><a class="reference internal" href="../../_images/image103.png"><img alt="image10" src="../../_images/image103.png" style="width: 5.75in; height: 2.06312in;" /></a></p>
+</li>
+</ol>
+</li>
+<li><p>When finalizing the wizard ensure to choose the option to continue
+working on the detailed properties of this task. If you didn’t enable
+this option, you can always right-click on the configured task and
+choose “Properties”</p></li>
+<li><div class="line-block">
+<div class="line">Within the <em>General</em> tab, ensure that the task is set to run
+whether a user is logged in or not:</div>
+<div class="line"><a class="reference internal" href="../../_images/image116.png"><img alt="image11" src="../../_images/image116.png" style="width: 4.69393in; height: 3.6875in;" /></a></div>
+</div>
+</li>
+</ol>
+<ol class="arabic" start="10">
+<li><div class="line-block">
+<div class="line">On the <em>Conditions</em> tab, ensure that none of the restrictive
+options is enabled. The task should always start on any server
+(re-) start.</div>
+<div class="line"><a class="reference internal" href="../../_images/image123.png"><img alt="image12" src="../../_images/image123.png" style="width: 4.95833in; height: 3.4375in;" /></a></div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">On the <em>Settings</em> tab, configure the task similar as shown below:</div>
+<div class="line"><a class="reference internal" href="../../_images/image133.png"><img alt="image13" src="../../_images/image133.png" style="width: 5.02083in; height: 4.04167in;" /></a></div>
+</div>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="section" id="configuration">
+<h2><a class="toc-backref" href="#id12">Configuration</a><a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<p>This section describes how to configure both the Extreme Connect SCCM
+module and the Extreme SCCM adapter service.</p>
+<div class="section" id="configure-connect-sccm-module">
+<h3><a class="toc-backref" href="#id13">Configure Connect SCCM Module</a><a class="headerlink" href="#configure-connect-sccm-module" title="Permalink to this headline">¶</a></h3>
+<p>Since Extreme Management Center 7.0 the Extreme Connect user interface
+is fully integrated into OneView. Once you have an Advanced License
+applied, you should see a top-level tab named “Connect” within OneView.
+Within the Connect area, choose the Configuration tab and then the
+Administration tab below. Within the Administration area you can now
+choose the “Microsoft SCCM” module to configure the so called <em>service</em>
+first.</p>
+<p><a class="reference internal" href="../../_images/image143.png"><img alt="image14" src="../../_images/image143.png" style="width: 6.27014in; height: 3.86042in;" /></a></p>
+<p>A “service” represents one SCCM server you want to query. In theory, you
+could add (and thus query) multiple SCCM servers but in reality most
+customers will only have one SCCM server.</p>
+<p>To configure the connection to the SCCM adapter running on your SCCM
+server, adjust these available settings:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 4%" />
+<col style="width: 96%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Explanation</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>server</p></td>
+<td><p>The name or IP of the SCCM server (technically, the IP the SCCM adapter is running on so Connect knows where to find the web service to retrieve SCCM computer data)</p></td>
+</tr>
+<tr class="row-odd"><td><p>serverPort</p></td>
+<td><p>The TCP port which the adapter service is running on. You must configure the same port within the adapter’s config file.</p></td>
+</tr>
+<tr class="row-even"><td><p>password</p></td>
+<td><p>The password is actually the same as the pre-shared key configured within the adpater’s config file. Those two values must match! Otherwise the Connect module won’t be able to decrypt the data it receives from the SCCM adapter.</p></td>
+</tr>
+</tbody>
+</table>
+<p>Next, move on to the “Configuration” tab where you can configure the
+following settings:</p>
+<p><a class="reference internal" href="../../_images/image153.png"><img alt="image15" src="../../_images/image153.png" style="width: 6.27014in; height: 6.32847in;" /></a></p>
+<p>These parameters are available:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Explanation</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Poll interval in seconds</p></td>
+<td><p>This is the sleep time in between two synchronizations. On each synchronization, the Connect module will query the SCCM computer list from the adapter and process it internally. Usually it is not necessary to have the SCCM Connect module query the SCCM adapter for new data every few seconds since that data isn’t changed that regularly and each synchronization puts extra load on both the SCCM server and Extreme Management. It is recommended to set this value to a minimum of one hour or multiples of an hour (3600 secs or more).</p></td>
+</tr>
+<tr class="row-odd"><td><p>Log level</p></td>
+<td><p>The log level for this module. Each module logs into the standard XMC log file. It is recommended to set this to WARN or ERROR. Use DEBUG only for debugging / troubleshooting / testing.</p></td>
+</tr>
+<tr class="row-even"><td><p>Enabled</p></td>
+<td><p>Enables / disables this module</p></td>
+</tr>
+<tr class="row-odd"><td><p>Update local data</p></td>
+<td><p>Always keep this set to true. When set to false, the module won’t perform the data import and is thus useless.</p></td>
+</tr>
+<tr class="row-even"><td><p>Custom field</p></td>
+<td><p>The Extreme Control custom field where the SCCM module will write its SCCM computer data to. You can choose between all four available custom fields. Ensure that you don’t use the same custom field for any of the other Connect modules otherwise they will overwrite each other constantly.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Format of incoming data</p></td>
+<td><p>Allows you to define which parts of the imported computer data to display per NAC end-system and it is formatted. When putting one of the available computer property names within two ‘#’ signs, the Connect module will automatically replace the variable with the corresponding content.</p>
+<div class="line-block">
+<div class="line">Available Variables:</div>
+<div class="line">id, mac, macDesc, netbiosName, lastLogonUserDomain, lastLogonUser, operatingSystem, servicePack, computerManufacturer, computerModel</div>
+</div>
+<div class="line-block">
+<div class="line">Default config:</div>
+<div class="line">ComputerId=#id#; NwAdapter Desc=#macDesc#; Netbios Name=#netbiosName#; User=#lastLogonUserDomain##lastLogonUser#; OS=#operatingSystem# (#servicePack#); Manufacturer=#computerManufacturer# Model=#computerModel#</div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td><p>Overwrite username</p></td>
+<td><p>When enabled, Connect will overwrite the username for end-systems in Extreme Control using the imported username (last logged on user including domain) from SCCM. Be aware that this must be disabled when you are using an 802.1X based authentication mechanism!</p></td>
+</tr>
+<tr class="row-odd"><td><p>Overwrite device type</p></td>
+<td><p>When enabled, Connect will overwrite the device type for end-system in Extreme Control using the imported devices types (operating system + service pack) from SCCM. Be aware that this will overwrite any device type retrieved using standard Control mechanisms like DHCP fingerprinting!</p></td>
+</tr>
+<tr class="row-even"><td><p>End-system group for decommissioned devices</p></td>
+<td><p>The default end-system group for decommissioned devices</p></td>
+</tr>
+<tr class="row-odd"><td><p>Remove device from other groups on decommission</p></td>
+<td><p>Enable this to remove a device from all other groups when it is moved to the decommission group</p></td>
+</tr>
+<tr class="row-even"><td><p>Delete custom data in XMC for decommissioned devices</p></td>
+<td><p>If a device is deleted in SCCM the end-system’s custom data field in XMC will be cleared</p></td>
+</tr>
+<tr class="row-odd"><td><p>Enable assessment for software updates</p></td>
+<td><p>If enabled, Connect will process any missing software updates for each SCCM computer and add the corresponding data to the Connect assessment service where it can be used by NAC to assess the end-system and generate Health Results. Disabled by default.</p></td>
+</tr>
+<tr class="row-even"><td><p>Max age for Software Updates</p></td>
+<td><p>SCCM provides a ‘start date’ for each missing software update which indicates the date and time this update was available to the computer. Connect will calculate the difference from that start date till now (in nr of days) and if that difference exceeds the number configured through this option, Connect will set a higher risk value to the associated assessment test set and set the corresponding test set value to ‘Not Compliant’.</p>
+<p>This can be used to quarantine end-systems that haven’t installed software updates for x number of days. A configured value of 0 disables this feature. Default: 0</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p>Re-Assess end-systems due to changed software update status</p></td>
+<td><p>If end-systems get assessed based on their missing software updates and there is a changed in compliance status (either it has been compliant before and is now non-compliant or vice versa) this feature will tell NAC to immediately re-authenticate and re-assess these end-systems. This will allow to ‘quickly’ quarantine end-systems that become non-compliant and get end-systems out of quarantine that previously have been non-compliant. Disabled by default.</p>
+<p>Only applicable if options ‘Enable assessment for software updates’ and ‘Max age for Software Updates’ are also enabled/configured</p>
+</td>
+</tr>
+<tr class="row-even"><td><p>HTTP Socket Timeout</p></td>
+<td><p>Timeout (in seconds) for the HTTP socket (connection) to the SCCM adapter. If you regularly see ‘Read timed out’ ERROR messages in your server.log then it might make sense to increase the default value for this config option. Default: 30</p></td>
+</tr>
+<tr class="row-odd"><td><p>HTTP Connect Timeout</p></td>
+<td><p>Timeout (in seconds) for the HTTP connect to the SCCM adapter. If you regularly see ‘connect out’ ERROR messages in your server.log then it might make sense to increase the default value for this config option. Default: 30</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="configure-sccm-adapter">
+<h3><a class="toc-backref" href="#id14">Configure SCCM Adapter</a><a class="headerlink" href="#configure-sccm-adapter" title="Permalink to this headline">¶</a></h3>
+<p>The SCCM adaper is configured through its config file. If you followed
+the recommend folder structure, the file should be located here:</p>
+<p><em>C:Program FilesExtreme NetworksSCCM AdapterConnectSccmAdapter.config</em></p>
+<p>The file contains the following config options:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 91%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Explanation</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>PRE_SHARED_KEY</p></td>
+<td><p>The pre-shared key is used to encrypt the data before sending it to the requesting Connect SCCM module. Ensure to configure the exact same pre-shared key as “password” within the Connect SCCM module config.</p>
+<p>To set / change this value, also ensure to set the IS_PRE_SHARED_KEY_ENCRYPTED config option to “false” so that the adapter processes the manually entered pre-shared key as clear text password. During the next iteration of the adapter it will store the new pre-shared key and update it within the config file in encrypted form.</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p>IS_PRE_SHARED_KEY_ENCRYPTED</p></td>
+<td><p>Tells the adapter whether the configured pre-shared key is currently provided in clear text or encrypted. You only need to change this value ( set it to “false”) if you want to change the pre-shared key and have to provide it in clear text.</p></td>
+</tr>
+<tr class="row-even"><td><p>SCCM_SERVER</p></td>
+<td><p>The name or IP of your SCCM server. The adapter will need to provide this IP / name when running the Powershell commands.</p></td>
+</tr>
+<tr class="row-odd"><td><p>SCCM_SITE_CODE</p></td>
+<td><p>The SCCM site code. The adapter will need to provide this code / name when running the Powershell commands. The adapter will automatically pre-fix this configured value with “rootsmssite_” so there is no need to provide the full value – just the code itself is to be configured.</p></td>
+</tr>
+<tr class="row-even"><td><p>PORT</p></td>
+<td><p>The TCP port which the adapter will use to start and run its web service. The Connect SCCM module running on your Extreme Management Server will need to be configured to connect to exactly this port so it can retrieve the SCCM computer data from the adapter. Ensure that no other service running on your SCCM server is using this port otherwise the adapter won’t be able to start.</p></td>
+</tr>
+<tr class="row-odd"><td><p>SLEEP_INTERVAL</p></td>
+<td><p>The time (in seconds) the adapter will sleep (pause) between iterations. It is recommended to set this value to 3600 (=one hour) or higher in order to keep the load on your SCCM server low. Only set this to lower values when you are testing or troubleshooting.</p></td>
+</tr>
+<tr class="row-even"><td><p>LOG_LEVEL</p></td>
+<td><p>The adapter’s log level. Valid values are: DEBUG, INFO, WARN and ERROR. Use DEBUG for testing / troubleshooting only. Use WARN or ERROR for normal operation.</p></td>
+</tr>
+<tr class="row-odd"><td><p>QUERY_SMS_G_SYSTEM_FOR_MAC_ADDRESSES</p></td>
+<td><p>If enabled, will query MAC addresses from table SMS_G_SYSTEM in addition to querying them from table SMS_G_System_NETWORK_ADAPTER. Sometimes MAC addresses are listed in SMS_G_SYSTEM but not in SMS_G_System_NETWORK_ADAPTER - this feature will also import those MAC addresses. Those MAC addresses cannot be filtered by type so they will be imported without further validation.</p></td>
+</tr>
+<tr class="row-even"><td><p>RETRIEVE_DEVICE_SOFTWARE_UPDATES</p></td>
+<td><p>If enabled, will retrieve pending (available but not yet installed) software updates (patches) for each managed computer in SCCM. This data can be used by Connect as assessment results for NAC/XMC. It will be visible in the ‘Health Results’ section per end-system and can also be used to quarantine end-systems.</p></td>
+</tr>
+<tr class="row-odd"><td><p>NR_OF_PINGS_FOR_CONNECTIVITY_TEST_TO_RETRIEVE_SOFTWARE_UPDATES</p></td>
+<td><p>When the feature to retrieve missing software updates is enabled, the adapter will run two actions before actually try to retrieve those software update data: a ping test and a WMI connectivity test. This config option allows you to configure the number of pings used within the ping test. Usually, one ping should be fine. If this is not enough in your network you can increase this number but be aware that the higher that number the longer it takes for connectivity tests and the longer the overall processing time to gather missing software updates.</p></td>
+</tr>
+<tr class="row-even"><td><p>POWERSHELL_TIMEOUT_RETRIEVING_SOFTWARE_UPDATES</p></td>
+<td><p>Define the timeout (in seconds) for each Powershell command that tries to retrieve the next batch of missing software updates from all managed computers. If the configured timeout is reached, the underlying process is destroyed. Setting this value to 0 will disable any timeout but be aware that we have seen situations in customer environments where the WMI query hung up the powershell process forever! So it is recommended to actually configure this value properly. Be aware that you need to increase the timeout if you increase any of these two config parameters as they influence the overall processing time for the powershell command:</p>
+<p>–&gt; NR_OF_COMPUTERS_TO_PROCESS_AT_ONCE_WHEN_RETRIEVING_SOFTWARE_UPDATES</p>
+<p>–&gt; NR_OF_PINGS_FOR_CONNECTIVITY_TEST_TO_RETRIEVE_SOFTWARE_UPDATES</p>
+<p>If you keep the number of pings for the connectivity test to the default 1 and the batch size of computers to process at once at the default of 10 you should be fine with a timeout of about 100 seconds.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="verification">
+<h2><a class="toc-backref" href="#id15">Verification</a><a class="headerlink" href="#verification" title="Permalink to this headline">¶</a></h2>
+<p>The SCCM integration will perform two tasks with Extreme Control:</p>
+<ol class="arabic simple">
+<li><p>Assign all MAC addresses from SCCM into one NAC end-system group</p></li>
+<li><p>Import computer data and populate it within the end-systems’ custom
+field</p></li>
+</ol>
+<div class="section" id="verify-group-memberships">
+<h3><a class="toc-backref" href="#id16">Verify Group Memberships</a><a class="headerlink" href="#verify-group-memberships" title="Permalink to this headline">¶</a></h3>
+<p>To verify the automatic group assignment of MAC addresses from SCCM
+within NAC simply go to OneView, open the end-system group you
+configured within the SCCM module and verify that your SCCM computer MAC
+addresses are populated with that group.</p>
+</div>
+<div class="section" id="verify-custom-data">
+<h3><a class="toc-backref" href="#id17">Verify Custom Data</a><a class="headerlink" href="#verify-custom-data" title="Permalink to this headline">¶</a></h3>
+<p>To verify the custom data for SCCM managed end-systems logon to OneView
+and view the custom fields of those end-systems. Depending on which
+custom field you have configured within Connect o populate the SCCM data
+into, you should see data similar to this:</p>
+<p><a class="reference internal" href="../../_images/image163.png"><img alt="image16" src="../../_images/image163.png" style="width: 6.27083in; height: 1.0625in;" /></a></p>
+</div>
+</div>
+<div class="section" id="troubleshooting">
+<h2><a class="toc-backref" href="#id18">Troubleshooting</a><a class="headerlink" href="#troubleshooting" title="Permalink to this headline">¶</a></h2>
+<p>This section offers troubleshooting advice for problematic situations.</p>
+<div class="section" id="adapter-functionality">
+<h3><a class="toc-backref" href="#id19">Adapter Functionality</a><a class="headerlink" href="#adapter-functionality" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="adapter-logging">
+<h4>Adapter Logging<a class="headerlink" href="#adapter-logging" title="Permalink to this headline">¶</a></h4>
+<p>The basic troubleshooting process starts with enabling DEBUG logging on
+the adapter side (on your SCCM server). That way, you can ensure that
+the adapter is running and is able to gather all required compuer data.</p>
+<p>If you followed the recommend folder structure, the adapter’s config
+file should be located here:</p>
+<p><em>C:Program FilesExtreme NetworksSCCM AdapterConnectSccmAdapter.config</em></p>
+<p>Set the LOG_LEVEL to “<em>DEBUG</em>”, set the POLL_INTERVAL to 60 seconds
+(so you will results quickly) and save your changes. Now you need to
+restart the adapter. If you are running the adapter manually in a CMD or
+Powershell window, simply stop that process and restart it. If you run
+it automatically managed by the Windows Task Scheduler then use that
+tool to stop and restart the service.</p>
+<p>After restarting the adper, wait a minute or two (depending on the size
+of your SCCM database, gathering all data may take anywhere from a few
+seconds up to a few minutes). Then open the log file located in the same
+(installation) folder and called</p>
+<p><em>C:Program FilesExtreme NetworksSCCM AdapterConnectSccmAdapter.log</em></p>
+<p>If you have a lot of logs, you will see multiple log files – the adapter
+generates up to 10 log files with each up to 50MB file size (this can
+also be tuned using the log4j.properties file). Validate whether you see
+proper computer data or any warnings or errors appear. If no errors nor
+warnings appear and all computer data is visible then move on to the
+next test step.</p>
+</div>
+<div class="section" id="adapter-web-service">
+<h4>Adapter Web Service<a class="headerlink" href="#adapter-web-service" title="Permalink to this headline">¶</a></h4>
+<p>Since you verified that the adapter is properly retrieving computer data
+from SCCM you will now need to verify whether the web service of the
+adapter is working and accessible from the Extreme Management Center.</p>
+<p>Logon to your XMC (NetSight server) via putty and execute a call similar
+to this (adjust the NetSight IP and the port you have configured your
+SCCM adapter to run on):</p>
+<p><a class="reference internal" href="../../_images/image173.png"><img alt="image17" src="../../_images/image173.png" style="width: 4.79167in; height: 1.83333in;" /></a></p>
+<p>If successful, this call will, by default, download the content from the
+SCCM adapter and save it in a file called index.html. You can open the
+file and validate whether it shows some content. The content will be
+encrypted but at least you know that the adatper’s web service is
+running and reponds to web requests. If the call to <em>wget</em> is not
+working properly there might be an issue with routing, firewalling or
+the port you have configured for the adapter to run on.</p>
+</div>
+<div class="section" id="connect-sccm-module-logging">
+<h4>Connect SCCM Module Logging<a class="headerlink" href="#connect-sccm-module-logging" title="Permalink to this headline">¶</a></h4>
+<p>Finally, you can enable debug logging for the Connect SCCM module within
+OneView to verify whether your issue exists within Connect:</p>
+<p><a class="reference internal" href="../../_images/image183.png"><img alt="image18" src="../../_images/image183.png" style="width: 6.27014in; height: 1.70903in;" /></a></p>
+<p>After modifying the setting to DEBUG, hit the “Save” Button on top of
+the General Configuration area. Depending on your configured “Poll
+interval in seconds” you might have to wait a while before you actually
+see DEBUG logs within the XMC’s log file. If you don’t want to wait, you
+can restart the NetSight server in order for the change to take immedate
+effect (<em>service nsserver restart</em>).</p>
+<p>The server.log can be found here:</p>
+<p><em>/usr/local/Extreme_Networks/NetSight/appdata/logs/server.log</em></p>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">Connect</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Integration Verticals:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../security/index.html">Security</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../mobility/index.html">Mobility</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../private-public-cloud/index.html">Public &amp; Private Cloud</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">IT Operations</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">IT Operations</a><ul>
+      <li>Previous: <a href="../index.html" title="previous chapter">IT Operations</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Kurt Semba.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../_sources/it-operations/microsoft_sccm/microsoft_sccm.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
